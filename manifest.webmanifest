@@ -1,0 +1,17 @@
+{
+  "name": "Portfolio Tracker",
+  "short_name": "Portfolio",
+  "description": "Consolidated Revolut + Trading 212 portfolio with live prices, allocation and value-over-time charts, and per-position P/L in EUR.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0E1830",
+  "theme_color": "#12203B",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

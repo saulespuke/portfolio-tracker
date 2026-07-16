@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#12203B" />
+<title>Portfolio Tracker</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icon-192.png" />
+<link rel="apple-touch-icon" href="./icon-192.png" />
+<style>
+  :root{
+    --navy:#12203B; --navy2:#1B2A41; --card:#F3F6FB; --ink:#1B2A41;
+    --muted:#6B7A90; --line:#E2E8F2; --green:#2E9E5B; --red:#D6452C;
+    --accent:#4C7DF0; --bg:#0E1830;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.45;
+  }
+  a{color:var(--accent)}
+  header{
+    background:linear-gradient(135deg,var(--navy) 0%,#1c3157 100%);
+    color:#fff; padding:18px 22px; display:flex; align-items:center;
+    justify-content:space-between; flex-wrap:wrap; gap:12px;
+    position:sticky; top:0; z-index:20;
+  }
+  header .brand{display:flex; align-items:center; gap:12px}
+  header .brand .logo{
+    width:38px;height:38px;border-radius:10px;background:#fff2;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;
+    border:1px solid #ffffff33;
+  }
+  header h1{font-size:19px; margin:0; font-weight:700; letter-spacing:.2px}
+  header .sub{font-size:12px; color:#c7d4ec; margin-top:1px}
+  .hdr-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  button{
+    font:inherit; cursor:pointer; border-radius:9px; border:1px solid transparent;
+    padding:9px 14px; font-weight:600; font-size:13px; transition:.12s;
+  }
+  button:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent); color:#fff}
+  .btn-primary:hover{background:#3d6be0}
+  .btn-ghost{background:#ffffff1a; color:#fff; border-color:#ffffff33}
+  .btn-ghost:hover{background:#ffffff2e}
+  .btn-light{background:#fff; color:var(--ink); border-color:var(--line)}
+  .btn-light:hover{background:#eef2f9}
+  .wrap{max-width:1200px; margin:0 auto; padding:22px}
+  .toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px}
+  .switch{display:flex; align-items:center; gap:8px; color:#cdd8ec; font-size:13px}
+  .switch input{width:0;height:0;opacity:0;position:absolute}
+  .switch label{
+    width:42px;height:24px;background:#ffffff33;border-radius:20px;position:relative;
+    cursor:pointer;transition:.15s;display:inline-block
+  }
+  .switch label:before{
+    content:"";position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;
+    top:3px;left:3px;transition:.15s
+  }
+  .switch input:checked + label{background:var(--green)}
+  .switch input:checked + label:before{left:21px}
+  .status{font-size:12px;color:#9fb0cc;margin-left:auto}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .kpi .label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700}
+  .kpi .value{font-size:26px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+  .kpi .value.sm{font-size:20px}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .panel h2{font-size:14px;margin:0 0 12px;font-weight:700;letter-spacing:.2px;display:flex;justify-content:space-between;align-items:center}
+  .panel h2 .seg{display:flex;gap:4px}
+  .seg button{padding:5px 10px;font-size:12px;background:#eef2f9;color:var(--muted);border-radius:7px}
+  .seg button.active{background:var(--navy);color:#fff}
+  .chart-box{position:relative;height:260px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:10px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;cursor:pointer;user-select:none}
+  tbody tr:hover{background:#f7f9fd}
+  .tick{font-weight:700}
+  .pill{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;letter-spacing:.3px}
+  .pill.rev{background:#e7f0ff;color:#2b5cd6}
+  .pill.t212{background:#e9f7ef;color:#1f8b4c}
+  .pill.other{background:#eee;color:#666}
+  .empty{padding:50px 20px;text-align:center;color:var(--muted)}
+  .empty h3{color:var(--ink);margin:0 0 8px}
+  .table-wrap{overflow-x:auto}
+  .muted{color:var(--muted)}
+  .tiny{font-size:11px}
+  footer{max-width:1200px;margin:8px auto 30px;padding:0 22px;color:#7f8db0;font-size:11px;text-align:center}
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:#0b1428cc;display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .modal-bg.open{display:flex}
+  .modal{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:90vh;overflow:auto;padding:24px}
+  .modal h2{margin:0 0 4px;font-size:18px}
+  .modal p.hint{margin:0 0 16px;color:var(--muted);font-size:13px}
+  label.fld{display:block;font-size:12px;font-weight:700;color:var(--ink);margin:14px 0 5px}
+  input[type=text],input[type=password],input[type=number],textarea,select{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff
+  }
+  textarea{min-height:150px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;resize:vertical}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+  .row{display:flex;gap:10px}
+  .row>*{flex:1}
+  .note{background:#f2f6ff;border:1px solid #d9e5ff;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#33507f;margin:10px 0}
+  .err{background:#fdeeeb;border:1px solid #f6cdc4;color:#9c3016}
+  .del{background:none;border:none;color:var(--red);cursor:pointer;font-weight:700;font-size:12px}
+  code{background:#eef2f9;padding:1px 5px;border-radius:4px;font-size:12px}
+  @media(max-width:820px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .grid2{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">P</div>
+    <div>
+      <h1>Portfolio Tracker</h1>
+      <div class="sub">Revolut + Trading 212 · consolidated · EUR</div>
+    </div>
+  </div>
+  <div class="hdr-actions">
+    <button class="btn-light" id="btnInstall" style="display:none">&#8595; Install app</button>
+    <button class="btn-ghost" id="btnHoldings">Holdings</button>
+    <button class="btn-ghost" id="btnSettings">Settings</button>
+    <button class="btn-primary" id="btnRefresh">Refresh</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <div class="switch">
+      <input type="checkbox" id="autoToggle" />
+      <label for="autoToggle"></label>
+      <span>Auto-refresh</span>
+    </div>
+    <select id="autoInterval" style="width:auto;background:#ffffff1a;color:#fff;border-color:#ffffff33">
+      <option value="30">every 30s</option>
+      <option value="60" selected>every 1 min</option>
+      <option value="300">every 5 min</option>
+      <option value="900">every 15 min</option>
+    </select>
+    <span class="status" id="status">Not updated yet</span>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="label">Total Value</div>
+      <div class="value" id="kpiValue">—</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Total P/L</div>
+      <div class="value sm" id="kpiPL">—</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Today</div>
+      <div class="value sm" id="kpiDay">—</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Invested (cost)</div>
+      <div class="value sm" id="kpiCost">—</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Allocation
+        <span class="seg">
+          <button data-alloc="position" class="active">By position</button>
+          <button data-alloc="platform">By platform</button>
+        </span>
+      </h2>
+      <div class="chart-box"><canvas id="allocChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <h2>Value over time <span class="tiny muted" id="snapCount"></span></h2>
+      <div class="chart-box"><canvas id="valueChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Positions <span class="tiny muted" id="posMeta"></span></h2>
+    <div class="table-wrap">
+      <table id="posTable">
+        <thead>
+          <tr>
+            <th data-sort="name">Position</th>
+            <th data-sort="platform">Platform</th>
+            <th data-sort="qty">Qty</th>
+            <th data-sort="avg">Avg cost</th>
+            <th data-sort="price">Last</th>
+            <th data-sort="dayPct">Day %</th>
+            <th data-sort="value">Value €</th>
+            <th data-sort="pl">P/L €</th>
+            <th data-sort="plPct">P/L %</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="posBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="emptyState">
+      <h3>No holdings yet</h3>
+      <p class="muted">Add your Revolut &amp; Trading 212 positions to get started.</p>
+      <button class="btn-primary" id="btnAddFirst" style="margin-top:6px">Add holdings</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Prices via Finnhub · FX via Frankfurter (ECB) · data stored only in this browser.
+  Not investment advice. <span id="fxNote"></span>
+</footer>
+
+<!-- Settings modal -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <h2>Settings</h2>
+    <p class="hint">Your Finnhub API key stays in this browser only.</p>
+    <label class="fld" for="apiKey">Finnhub API key</label>
+    <input type="password" id="apiKey" placeholder="paste your free key from finnhub.io" autocomplete="off" />
+    <div class="note">Get a free key at <a href="https://finnhub.io/register" target="_blank" rel="noopener">finnhub.io/register</a> — the free tier covers US stocks and forex. Free keys are limited to ~60 calls/min, so large portfolios refresh in small batches automatically.</div>
+    <label class="fld" for="baseCcy">Base currency</label>
+    <select id="baseCcy">
+      <option value="EUR" selected>EUR (€)</option>
+      <option value="USD">USD ($)</option>
+      <option value="GBP">GBP (£)</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-light" data-close>Cancel</button>
+      <button class="btn-light" id="btnExport">Export data</button>
+      <button class="btn-light" id="btnImport">Import data</button>
+      <button class="btn-primary" id="btnSaveSettings">Save</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none" />
+  </div>
+</div>
+
+<!-- Holdings modal -->
+<div class="modal-bg" id="holdingsModal">
+  <div class="modal">
+    <h2>Holdings</h2>
+    <p class="hint">Bulk-paste one position per line, then Save. The text below is the full source of truth for your holdings.</p>
+    <div class="note" id="pasteHelp">
+      Format (comma or tab separated):<br>
+      <code>platform, ticker, quantity, avgCost, currency, name</code><br>
+      Example:<br>
+      <code>Trading212, AAPL, 10, 172.40, USD, Apple Inc</code><br>
+      <code>Revolut, MSFT, 4, 390, USD</code><br>
+      <code>Trading212, ASML, 2, 620, EUR, ASML Holding</code><br>
+      <span class="tiny muted">Platform, ticker &amp; quantity are required. Currency defaults to USD. Ticker must match Finnhub (e.g. <code>AAPL</code>, <code>ASML.AS</code>, <code>SHEL.L</code>).</span>
+    </div>
+    <textarea id="bulkInput" placeholder="Trading212, AAPL, 10, 172.40, USD, Apple Inc&#10;Revolut, TSLA, 3, 240, USD"></textarea>
+    <div class="modal-actions">
+      <button class="del" id="btnClearAll" style="margin-right:auto">Clear all holdings</button>
+      <button class="btn-light" data-close>Cancel</button>
+      <button class="btn-primary" id="btnSaveHoldings">Save holdings</button>
+    </div>
+    <div id="parseErr"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+"use strict";
+/* ---------- Storage ---------- */
+const LS = {
+  key:  'pt_finnhub_key',
+  base: 'pt_base_ccy',
+  hold: 'pt_holdings',
+  snap: 'pt_snapshots',
+  auto: 'pt_auto',
+  intv: 'pt_interval',
+};
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k, v){ localStorage.setItem(k, JSON.stringify(v)); },
+};
+const CCY = {EUR:'€', USD:'$', GBP:'£'};
+
+let holdings = store.get(LS.hold, []);      // {platform,ticker,qty,avg,ccy,name}
+let snapshots = store.get(LS.snap, []);     // {date:'YYYY-MM-DD', value:Number}
+let apiKey = store.get(LS.key, '');
+let baseCcy = store.get(LS.base, 'EUR');
+let fxRates = {};                           // {CCY: rate to base}
+let quotes = {};                            // {ticker: {c,d,dp,pc}}
+let allocMode = 'position';
+let sortKey = 'value', sortDir = -1;
+let autoTimer = null;
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const fmt = (n, ccy=baseCcy) => (n<0?'-':'') + (CCY[ccy]||'') + Math.abs(n).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtPct = n => (n>=0?'+':'') + n.toFixed(2) + '%';
+const cls = n => n>0?'pos':(n<0?'neg':'');
+const todayStr = () => new Date().toISOString().slice(0,10);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function platformClass(p){
+  const x=(p||'').toLowerCase();
+  if(x.includes('revolut')) return 'rev';
+  if(x.includes('212')||x.includes('trading')) return 't212';
+  return 'other';
+}
+function platformLabel(p){
+  const x=(p||'').toLowerCase();
+  if(x.includes('revolut')) return 'Revolut';
+  if(x.includes('212')||x.includes('trading')) return 'Trading 212';
+  return p||'—';
+}
+
+/* ---------- FX (Frankfurter / ECB) ---------- */
+async function loadFx(currencies){
+  const need = [...new Set(currencies.map(c=>c==='GBX'?'GBP':c))].filter(c=>c && c!==baseCcy);
+  fxRates = {[baseCcy]:1};
+  if(need.length===0){ if(baseCcy==='GBP') fxRates.GBX=0.01; return; }
+  try{
+    const url = `https://api.frankfurter.app/latest?from=${baseCcy}&to=${need.join(',')}`;
+    const r = await fetch(url);
+    const j = await r.json();
+    // Frankfurter returns base->to; we want to->base = 1/rate
+    for(const c of need){
+      if(j.rates && j.rates[c]) fxRates[c] = 1 / j.rates[c];
+    }
+    if(fxRates.GBP) fxRates.GBX = fxRates.GBP * 0.01; // pence
+    else if(baseCcy==='GBP') fxRates.GBX = 0.01;
+    $('#fxNote').textContent = 'FX @ ' + (j.date||todayStr());
+  }catch(e){
+    console.warn('FX load failed', e);
+  }
+}
+
+/* ---------- Quotes (Finnhub) ---------- */
+async function loadQuotes(tickers){
+  const uniq = [...new Set(tickers)];
+  quotes = {};
+  const batch = 8;
+  for(let i=0;i<uniq.length;i+=batch){
+    const slice = uniq.slice(i, i+batch);
+    await Promise.all(slice.map(async t=>{
+      try{
+        const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(t)}&token=${encodeURIComponent(apiKey)}`);
+        const j = await r.json();
+        if(j && typeof j.c === 'number') quotes[t] = j;
+      }catch(e){ console.warn('quote fail', t, e); }
+    }));
+    if(i+batch < uniq.length) await new Promise(r=>setTimeout(r, 1100)); // rate-limit friendly
+  }
+}
+
+/* ---------- Compute ---------- */
+function computeRows(){
+  return holdings.map(h=>{
+    const q = quotes[h.ticker];
+    const fx = fxRates[h.ccy] ?? (h.ccy===baseCcy?1:undefined);
+    const price = q ? q.c : null;
+    const dayPct = q ? q.dp : null;
+    const priceBase = (price!=null && fx!=null) ? price*fx : null;
+    const value = priceBase!=null ? priceBase * h.qty : null;
+    const costBase = (fx!=null) ? h.avg * fx * h.qty : null;
+    const pl = (value!=null && costBase!=null) ? value - costBase : null;
+    const plPct = (pl!=null && costBase>0) ? (pl/costBase*100) : null;
+    const dayEur = (q && fx!=null) ? q.d * fx * h.qty : null;
+    return {...h, price, dayPct, value, cost:costBase, pl, plPct, dayEur, hasQuote: !!q, hasFx: fx!=null};
+  });
+}
+function totals(rows){
+  let value=0, cost=0, day=0, ok=false;
+  for(const r of rows){
+    if(r.value!=null){ value+=r.value; ok=true; }
+    if(r.cost!=null) cost+=r.cost;
+    if(r.dayEur!=null) day+=r.dayEur;
+  }
+  return {value, cost, pl:value-cost, day, ok};
+}
+
+/* ---------- Render ---------- */
+let allocChart, valueChart;
+function render(){
+  const rows = computeRows();
+  const t = totals(rows);
+  const hasData = holdings.length>0;
+
+  $('#emptyState').style.display = hasData ? 'none':'block';
+  $('#posTable').style.display = hasData ? '':'none';
+
+  // KPIs
+  $('#kpiValue').textContent = t.ok ? fmt(t.value) : '—';
+  const plPct = t.cost>0 ? (t.pl/t.cost*100) : 0;
+  const plEl = $('#kpiPL');
+  plEl.innerHTML = t.ok ? `${fmt(t.pl)} <span class="tiny">(${fmtPct(plPct)})</span>` : '—';
+  plEl.className = 'value sm ' + cls(t.pl);
+  const dayEl = $('#kpiDay');
+  const prev = t.value - t.day;
+  const dayPct = prev>0 ? (t.day/prev*100) : 0;
+  dayEl.innerHTML = t.ok ? `${fmt(t.day)} <span class="tiny">(${fmtPct(dayPct)})</span>` : '—';
+  dayEl.className = 'value sm ' + cls(t.day);
+  $('#kpiCost').textContent = t.ok ? fmt(t.cost) : '—';
+
+  // Sort rows
+  const map = {name:'name',platform:'platform',qty:'qty',avg:'avg',price:'price',dayPct:'dayPct',value:'value',pl:'pl',plPct:'plPct'};
+  const sorted = [...rows].sort((a,b)=>{
+    let A=a[map[sortKey]], B=b[map[sortKey]];
+    if(typeof A==='string'){A=(A||'').toLowerCase();B=(B||'').toLowerCase();return A<B?-sortDir:A>B?sortDir:0;}
+    A=A??-Infinity; B=B??-Infinity; return (A-B)*sortDir;
+  });
+
+  // Table
+  const body = $('#posBody');
+  body.innerHTML = sorted.map(r=>{
+    const warn = !r.hasQuote ? '<span class="tiny neg" title="No quote — check ticker/key">&#9888;</span>' : (!r.hasFx?'<span class="tiny neg" title="No FX rate">&#9888;</span>':'');
+    return `<tr>
+      <td><span class="tick">${esc(r.ticker)}</span> ${warn}<div class="tiny muted">${esc(r.name||'')}</div></td>
+      <td><span class="pill ${platformClass(r.platform)}">${platformLabel(r.platform)}</span></td>
+      <td>${r.qty.toLocaleString('en-IE',{maximumFractionDigits:6})}</td>
+      <td>${r.avg.toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})} ${esc(r.ccy)}</td>
+      <td>${r.price!=null?r.price.toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+esc(r.ccy):'—'}</td>
+      <td class="${cls(r.dayPct||0)}">${r.dayPct!=null?fmtPct(r.dayPct):'—'}</td>
+      <td>${r.value!=null?fmt(r.value):'—'}</td>
+      <td class="${cls(r.pl||0)}">${r.pl!=null?fmt(r.pl):'—'}</td>
+      <td class="${cls(r.plPct||0)}">${r.plPct!=null?fmtPct(r.plPct):'—'}</td>
+      <td><button class="del" data-del="${esc(r.platform)}|${esc(r.ticker)}">&#10005;</button></td>
+    </tr>`;
+  }).join('');
+
+  $('#posMeta').textContent = hasData ? `${holdings.length} positions` : '';
+  renderAlloc(rows);
+  renderValueChart();
+  bindDeletes();
+}
+
+function renderAlloc(rows){
+  const valid = rows.filter(r=>r.value>0);
+  let labels=[], data=[];
+  if(allocMode==='platform'){
+    const m={};
+    valid.forEach(r=>{const k=platformLabel(r.platform); m[k]=(m[k]||0)+r.value;});
+    labels=Object.keys(m); data=Object.values(m);
+  }else{
+    const sorted=[...valid].sort((a,b)=>b.value-a.value);
+    sorted.forEach(r=>{labels.push(r.ticker); data.push(r.value);});
+  }
+  const palette=['#4C7DF0','#2E9E5B','#E9A13B','#8C5BE0','#2FB0C6','#D6452C','#5B7290','#C64F9C','#3BB273','#E0673B','#6C8BD6','#B0894C'];
+  const colors=labels.map((_,i)=>palette[i%palette.length]);
+  const total=data.reduce((a,b)=>a+b,0)||1;
+  const cfg={
+    type:'doughnut',
+    data:{labels, datasets:[{data, backgroundColor:colors, borderColor:'#fff', borderWidth:2}]},
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{legend:{position:'right', labels:{boxWidth:12, font:{size:11}}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)} (${(c.parsed/total*100).toFixed(1)}%)`}}}
+    }
+  };
+  if(allocChart){allocChart.data=cfg.data; allocChart.options=cfg.options; allocChart.update();}
+  else allocChart=new Chart($('#allocChart'), cfg);
+}
+
+function renderValueChart(){
+  $('#snapCount').textContent = snapshots.length ? `${snapshots.length} day${snapshots.length>1?'s':''}` : '';
+  const labels = snapshots.map(s=>s.date);
+  const data = snapshots.map(s=>s.value);
+  const up = data.length<2 || data[data.length-1]>=data[0];
+  const line = up?'#2E9E5B':'#D6452C';
+  const cfg={
+    type:'line',
+    data:{labels, datasets:[{data, borderColor:line, backgroundColor:line+'22', fill:true, tension:.25, pointRadius:data.length>30?0:3, borderWidth:2}]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>' '+fmt(c.parsed.y)}}},
+      scales:{x:{ticks:{maxTicksLimit:6, font:{size:10}}, grid:{display:false}},
+              y:{ticks:{callback:v=>fmt(v).replace(/\.00$/,''), font:{size:10}}, grid:{color:'#eef1f7'}}}
+    }
+  };
+  if(valueChart){valueChart.data=cfg.data; valueChart.options=cfg.options; valueChart.update();}
+  else valueChart=new Chart($('#valueChart'), cfg);
+}
+
+function bindDeletes(){
+  document.querySelectorAll('[data-del]').forEach(b=>{
+    b.onclick=()=>{
+      const [p,tk]=b.getAttribute('data-del').split('|');
+      holdings=holdings.filter(h=>!(h.platform===p && h.ticker===tk));
+      store.set(LS.hold, holdings); render();
+    };
+  });
+}
+
+/* ---------- Refresh ---------- */
+async function refresh(){
+  if(holdings.length===0){ render(); return; }
+  if(!apiKey){ setStatus('Add your Finnhub API key in Settings', true); openModal('#settingsModal'); return; }
+  setStatus('Updating…');
+  $('#btnRefresh').disabled=true;
+  try{
+    await loadFx(holdings.map(h=>h.ccy));
+    await loadQuotes(holdings.map(h=>h.ticker));
+    const rows=computeRows(); const t=totals(rows);
+    if(t.ok) recordSnapshot(t.value);
+    render();
+    const missing = rows.filter(r=>!r.hasQuote).length;
+    setStatus('Updated ' + new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}) + (missing?` · ${missing} ticker(s) had no quote`:''), missing>0);
+  }catch(e){
+    console.error(e); setStatus('Update failed — '+e.message, true);
+  }finally{
+    $('#btnRefresh').disabled=false;
+  }
+}
+function recordSnapshot(value){
+  const d=todayStr();
+  const i=snapshots.findIndex(s=>s.date===d);
+  if(i>=0) snapshots[i].value=value; else snapshots.push({date:d, value});
+  snapshots=snapshots.slice(-400);
+  store.set(LS.snap, snapshots);
+}
+function setStatus(msg, warn){
+  const el=$('#status'); el.textContent=msg; el.style.color=warn?'#ffb4a3':'#9fb0cc';
+}
+
+/* ---------- Auto-refresh ---------- */
+function applyAuto(){
+  if(autoTimer){clearInterval(autoTimer); autoTimer=null;}
+  const on=$('#autoToggle').checked;
+  const secs=parseInt($('#autoInterval').value,10);
+  store.set(LS.auto, on); store.set(LS.intv, secs);
+  if(on){ autoTimer=setInterval(refresh, secs*1000); }
+}
+
+/* ---------- Holdings parsing ---------- */
+function parseBulk(text){
+  const out=[], errs=[];
+  text.split(/\r?\n/).forEach((line,idx)=>{
+    const raw=line.trim(); if(!raw) return;
+    const parts=raw.split(/\t|,/).map(s=>s.trim());
+    if(parts.length<3){ errs.push(`Line ${idx+1}: need at least platform, ticker, quantity`); return; }
+    const platform=parts[0], ticker=parts[1], qtyS=parts[2], avgS=parts[3], ccyS=parts[4];
+    const nameRest=parts.slice(5);
+    const qty=parseFloat(qtyS);
+    if(!ticker || isNaN(qty)){ errs.push(`Line ${idx+1}: bad ticker or quantity`); return; }
+    const avg=parseFloat(avgS)||0;
+    const ccy=(ccyS||'USD').toUpperCase().replace(/[^A-Z]/g,'')||'USD';
+    const name=nameRest.join(', ').trim();
+    out.push({platform:platformLabel(platform), ticker:ticker.toUpperCase(), qty, avg, ccy, name});
+  });
+  return {out, errs};
+}
+function holdingsToText(){
+  return holdings.map(h=>`${h.platform}, ${h.ticker}, ${h.qty}, ${h.avg}, ${h.ccy}${h.name?', '+h.name:''}`).join('\n');
+}
+
+/* ---------- Modals ---------- */
+function openModal(sel){ $(sel).classList.add('open'); }
+function closeModal(sel){ $(sel).classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=e=>e.target.closest('.modal-bg').classList.remove('open'));
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
+
+/* ---------- Events ---------- */
+$('#btnSettings').onclick=()=>{ $('#apiKey').value=apiKey; $('#baseCcy').value=baseCcy; openModal('#settingsModal'); };
+$('#btnSaveSettings').onclick=()=>{
+  apiKey=$('#apiKey').value.trim(); baseCcy=$('#baseCcy').value;
+  store.set(LS.key, apiKey); store.set(LS.base, baseCcy);
+  closeModal('#settingsModal'); refresh();
+};
+$('#btnHoldings').onclick=$('#btnAddFirst').onclick=()=>{ $('#bulkInput').value=holdingsToText(); $('#parseErr').innerHTML=''; openModal('#holdingsModal'); };
+$('#btnSaveHoldings').onclick=()=>{
+  const {out, errs}=parseBulk($('#bulkInput').value);
+  if(errs.length){ $('#parseErr').innerHTML=`<div class="note err">${errs.map(esc).join('<br>')}</div>`; return; }
+  $('#parseErr').innerHTML='';
+  holdings = out;                 // textarea is the full source of truth
+  store.set(LS.hold, holdings);
+  closeModal('#holdingsModal');
+  render(); refresh();
+};
+$('#btnClearAll').onclick=()=>{
+  if(confirm('Remove all holdings? Snapshots are kept.')){ holdings=[]; store.set(LS.hold,holdings); $('#bulkInput').value=''; closeModal('#holdingsModal'); render(); }
+};
+$('#btnRefresh').onclick=refresh;
+$('#autoToggle').onchange=applyAuto;
+$('#autoInterval').onchange=applyAuto;
+
+document.querySelectorAll('[data-alloc]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('[data-alloc]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); allocMode=b.getAttribute('data-alloc'); render();
+});
+document.querySelectorAll('#posTable th[data-sort]').forEach(th=>th.onclick=()=>{
+  const k=th.getAttribute('data-sort');
+  if(sortKey===k) sortDir*=-1; else {sortKey=k; sortDir=-1;}
+  render();
+});
+
+/* Export / Import */
+$('#btnExport').onclick=()=>{
+  const blob=new Blob([JSON.stringify({holdings,snapshots,baseCcy},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='portfolio-backup-'+todayStr()+'.json'; a.click();
+};
+$('#btnImport').onclick=()=>$('#importFile').click();
+$('#importFile').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+    const j=JSON.parse(r.result);
+    if(Array.isArray(j.holdings)) holdings=j.holdings;
+    if(Array.isArray(j.snapshots)) snapshots=j.snapshots;
+    if(j.baseCcy) baseCcy=j.baseCcy;
+    store.set(LS.hold,holdings); store.set(LS.snap,snapshots); store.set(LS.base,baseCcy);
+    closeModal('#settingsModal'); render(); refresh();
+  }catch(err){ alert('Invalid backup file'); } };
+  r.readAsText(f);
+};
+
+/* ---------- Install (PWA) ---------- */
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault(); deferredPrompt=e; $('#btnInstall').style.display='';
+});
+$('#btnInstall').onclick=async()=>{
+  if(!deferredPrompt){ alert('To install: open your browser menu and choose "Install Portfolio Tracker" (or the install icon in the address bar).')
