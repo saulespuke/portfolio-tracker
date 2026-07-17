@@ -1,5 +1,5 @@
 /* Portfolio Tracker service worker — offline app shell, network for data */
-const CACHE = 'portfolio-tracker-v1';
+const CACHE = 'portfolio-tracker-v2';
 const SHELL = [
   './',
   './index.html',
