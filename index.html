@@ -400,7 +400,7 @@ function render(){
   const dayPct = prev>0 ? (t.day/prev*100) : 0;
   dayEl.innerHTML = t.ok ? `${fmt(t.day)} <span class="tiny">(${fmtPct(dayPct)})</span>` : '—';
   dayEl.className = 'value sm ' + cls(t.day);
-  $('#kpiCost').textContent = t.ok ? fmt(t.cost) : '—';
+  $('#kpiCost').textContent = t.cost>0 ? fmt(t.cost) : '—';
 
   // Sort rows
   const map = {name:'name',platform:'platform',qty:'qty',avg:'avg',price:'price',dayPct:'dayPct',value:'value',pl:'pl',plPct:'plPct'};
@@ -435,15 +435,17 @@ function render(){
 }
 
 function renderAlloc(rows){
-  const valid = rows.filter(r=>r.value>0);
+  const useValue = rows.some(r=>r.value>0);
+  const metric = r => (useValue ? r.value : r.cost) || 0;
+  const valid = rows.filter(r=>metric(r)>0);
   let labels=[], data=[];
   if(allocMode==='platform'){
     const m={};
-    valid.forEach(r=>{const k=platformLabel(r.platform); m[k]=(m[k]||0)+r.value;});
+    valid.forEach(r=>{const k=platformLabel(r.platform); m[k]=(m[k]||0)+metric(r);});
     labels=Object.keys(m); data=Object.values(m);
   }else{
-    const sorted=[...valid].sort((a,b)=>b.value-a.value);
-    sorted.forEach(r=>{labels.push(r.ticker); data.push(r.value);});
+    const sorted=[...valid].sort((a,b)=>metric(b)-metric(a));
+    sorted.forEach(r=>{labels.push(r.ticker); data.push(metric(r));});
   }
   const palette=['#4C7DF0','#2E9E5B','#E9A13B','#8C5BE0','#2FB0C6','#D6452C','#5B7290','#C64F9C','#3BB273','#E0673B','#6C8BD6','#B0894C'];
   const colors=labels.map((_,i)=>palette[i%palette.length]);
@@ -494,7 +496,12 @@ function bindDeletes(){
 /* ---------- Refresh ---------- */
 async function refresh(){
   if(holdings.length===0){ render(); return; }
-  if(!apiKey){ setStatus('Add your Finnhub API key in Settings', true); openModal('#settingsModal'); return; }
+  if(!apiKey){
+    setStatus('Showing invested cost — add your Finnhub key in Settings for live prices', true);
+    try{ await loadFx(holdings.map(h=>h.ccy)); }catch(e){}
+    render();
+    return;
+  }
   setStatus('Updating…');
   $('#btnRefresh').disabled=true;
   try{
@@ -635,8 +642,7 @@ function init(){
   $('#autoToggle').checked = store.get(LS.auto,false);
   $('#autoInterval').value = store.get(LS.intv,60);
   render();
-  if(holdings.length && apiKey){ refresh(); applyAuto(); }
-  else if(!apiKey && holdings.length){ setStatus('Add your Finnhub API key in Settings', true); }
+  if(holdings.length){ refresh(); applyAuto(); }
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
   }
