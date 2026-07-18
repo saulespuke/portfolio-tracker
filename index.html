@@ -320,7 +320,7 @@ async function loadFx(currencies){
   fxRates = {[baseCcy]:1};
   if(need.length===0){ if(baseCcy==='GBP') fxRates.GBX=0.01; return; }
   try{
-    const url = `https://api.frankfurter.app/latest?from=${baseCcy}&to=${need.join(',')}`;
+    const url = `https://api.frankfurter.dev/v1/latest?base=${baseCcy}&symbols=${need.join(',')}`;
     const r = await fetch(url);
     const j = await r.json();
     // Frankfurter returns base->to; we want to->base = 1/rate
