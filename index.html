@@ -339,6 +339,25 @@ async function loadFx(currencies){
 async function loadQuotes(tickers){
   const uniq = [...new Set(tickers)];
   quotes = {};
+  if(!apiKey){
+    // Seed from a stored price snapshot (reliable true value), USD prices.
+    const snap = store.get('pt_prices', {});
+    Object.keys(snap).forEach(k=>{ quotes[k] = {c:snap[k], d:0, dp:0, pc:snap[k]}; });
+    // Best-effort single live refresh via a CORS proxy (time-boxed, never blocks).
+    try{
+      const stooq = 'https://stooq.com/q/l/?s=' + uniq.map(t=>t.toLowerCase()+'.us').join('+') + '&f=sc&h&e=csv';
+      const ctrl = new AbortController(); const to = setTimeout(()=>ctrl.abort(), 5000);
+      const j = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(stooq), {signal:ctrl.signal}).then(r=>r.json());
+      clearTimeout(to);
+      (j.contents||'').trim().split('\n').slice(1).forEach(line=>{
+        const p = line.split(',');
+        const sym = (p[0]||'').replace(/\.US$/i,'').toUpperCase();
+        const c = parseFloat(p[1]);
+        if(sym && !isNaN(c) && c>0) quotes[sym] = {c:c, d:0, dp:0, pc:c};
+      });
+    }catch(e){ /* keep snapshot values */ }
+    return;
+  }
   const batch = 8;
   for(let i=0;i<uniq.length;i+=batch){
     const slice = uniq.slice(i, i+batch);
@@ -497,9 +516,13 @@ function bindDeletes(){
 async function refresh(){
   if(holdings.length===0){ render(); return; }
   if(!apiKey){
-    setStatus('Showing invested cost — add your Finnhub key in Settings for live prices', true);
+    setStatus('Updating live prices (free feed)…');
     try{ await loadFx(holdings.map(h=>h.ccy)); }catch(e){}
+    try{ await loadQuotes(holdings.map(h=>h.ticker)); }catch(e){}
+    const rows0=computeRows(); const t0=totals(rows0); if(t0.ok) recordSnapshot(t0.value);
     render();
+    const miss=rows0.filter(r=>!r.hasQuote).length;
+    setStatus('Updated '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'})+' · free feed'+(miss?` · ${miss} not priced`:''), miss>0);
     return;
   }
   setStatus('Updating…');
