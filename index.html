@@ -210,6 +210,7 @@
             <th data-sort="value">Value €</th>
             <th data-sort="pl">P/L €</th>
             <th data-sort="plPct">P/L %</th>
+            <th>Trend (15d)</th>
             <th></th>
           </tr>
         </thead>
@@ -445,6 +446,20 @@ function consolidateRows(rows){
 
 /* ---------- Render ---------- */
 let allocChart, valueChart;
+function sparkSVG(closes){
+  if(!closes || closes.length<2) return '<span class="tiny muted">—</span>';
+  const w=90, h=26, pad=2;
+  const min=Math.min(...closes), max=Math.max(...closes), rng=(max-min)||1, n=closes.length;
+  const xy=closes.map((c,i)=>[pad+i*(w-2*pad)/(n-1), h-pad-(c-min)/rng*(h-2*pad)]);
+  const line=xy.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const area=line+' '+(w-pad).toFixed(1)+','+(h-pad)+' '+pad+','+(h-pad);
+  const up=closes[n-1]>=closes[0];
+  const col=up?'#2E9E5B':'#D6452C';
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;margin-left:auto">`
+    +`<polygon points="${area}" fill="${col}" opacity="0.12"/>`
+    +`<polyline points="${line}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`
+    +`</svg>`;
+}
 function render(){
   const rows = computeRows();
   const t = totals(rows);
@@ -479,9 +494,13 @@ function render(){
 
   // Table — one row per company; both platforms shown together
   const body = $('#posBody');
+  const hist = store.get('pt_hist_raw', {});
   body.innerHTML = sorted.map(r=>{
     const warn = !r.hasQuote ? '<span class="tiny neg" title="No live price">&#9888;</span>' : (!r.hasFx?'<span class="tiny neg" title="No FX rate">&#9888;</span>':'');
     const pills = r.platforms.map(p=>`<span class="pill ${platformClass(p)}">${platformLabel(p)}</span>`).join(' ');
+    const hd = hist[r.key] || hist[r.ticker];
+    let spark = '<span class="tiny muted">—</span>';
+    if(hd){ const ds=Object.keys(hd).sort(); const closes=ds.slice(-15).map(d=>hd[d]).filter(v=>typeof v==='number' && !isNaN(v)); if(closes.length>1) spark=sparkSVG(closes); }
     return `<tr>
       <td><span class="tick">${esc(r.ticker)}</span> ${warn}<div class="tiny muted">${esc(r.name||'')}</div></td>
       <td>${pills}</td>
@@ -492,6 +511,7 @@ function render(){
       <td>${r.value!=null?fmt(r.value):'—'}</td>
       <td class="${cls(r.pl||0)}">${r.pl!=null?fmt(r.pl):'—'}</td>
       <td class="${cls(r.plPct||0)}">${r.plPct!=null?fmtPct(r.plPct):'—'}</td>
+      <td>${spark}</td>
       <td><button class="del" data-del="${esc(r.key)}">&#10005;</button></td>
     </tr>`;
   }).join('');
