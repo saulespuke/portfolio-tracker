@@ -398,6 +398,39 @@ function totals(rows){
   return {value, cost, pl:value-cost, day, ok};
 }
 
+/* ---------- Consolidation (merge same company across platforms) ---------- */
+const TICKER_ALIAS = {GOOGL:'GOOG'}; // treat Alphabet share classes as one company
+function groupKey(t){ return TICKER_ALIAS[t] || t; }
+function groupTicker(k){ return k==='GOOG' ? 'GOOGL/GOOG' : k; }
+function consolidateRows(rows){
+  const m={};
+  rows.forEach(r=>{
+    const k=groupKey(r.ticker);
+    let g=m[k];
+    if(!g){ g=m[k]={key:k, ticker:groupTicker(k), name:r.name||'', platforms:[], qty:0, costNat:0, ccy:r.ccy,
+      value:null, cost:null, pl:null, dayEur:null, price:r.price, dayPct:r.dayPct, hasQuote:false, hasFx:false}; }
+    if(g.platforms.indexOf(r.platform)<0) g.platforms.push(r.platform);
+    g.qty += r.qty;
+    g.costNat += (r.avg||0)*r.qty;
+    if(r.value!=null) g.value=(g.value||0)+r.value;
+    if(r.cost!=null) g.cost=(g.cost||0)+r.cost;
+    if(r.pl!=null) g.pl=(g.pl||0)+r.pl;
+    if(r.dayEur!=null) g.dayEur=(g.dayEur||0)+r.dayEur;
+    if(r.price!=null) g.price=r.price;
+    if(r.dayPct!=null) g.dayPct=r.dayPct;
+    if(!g.name && r.name) g.name=r.name;
+    if(r.hasQuote) g.hasQuote=true;
+    if(r.hasFx) g.hasFx=true;
+  });
+  return Object.values(m).map(g=>({
+    key:g.key, ticker:g.ticker, name:g.name, platforms:g.platforms, platform:g.platforms.join(' + '), ccy:g.ccy,
+    qty:g.qty, avg: g.qty? g.costNat/g.qty : 0, price:g.price, dayPct:g.dayPct,
+    value:g.value, cost:g.cost, pl:g.pl, dayEur:g.dayEur,
+    plPct: (g.cost>0 ? (g.pl/g.cost*100) : null),
+    hasQuote:g.hasQuote, hasFx:g.hasFx
+  }));
+}
+
 /* ---------- Render ---------- */
 let allocChart, valueChart;
 function render(){
@@ -421,21 +454,25 @@ function render(){
   dayEl.className = 'value sm ' + cls(t.day);
   $('#kpiCost').textContent = t.cost>0 ? fmt(t.cost) : '—';
 
-  // Sort rows
+  // Consolidate same company across platforms
+  const crows = consolidateRows(rows);
+
+  // Sort consolidated positions
   const map = {name:'name',platform:'platform',qty:'qty',avg:'avg',price:'price',dayPct:'dayPct',value:'value',pl:'pl',plPct:'plPct'};
-  const sorted = [...rows].sort((a,b)=>{
+  const sorted = [...crows].sort((a,b)=>{
     let A=a[map[sortKey]], B=b[map[sortKey]];
     if(typeof A==='string'){A=(A||'').toLowerCase();B=(B||'').toLowerCase();return A<B?-sortDir:A>B?sortDir:0;}
     A=A??-Infinity; B=B??-Infinity; return (A-B)*sortDir;
   });
 
-  // Table
+  // Table — one row per company; both platforms shown together
   const body = $('#posBody');
   body.innerHTML = sorted.map(r=>{
-    const warn = !r.hasQuote ? '<span class="tiny neg" title="No quote — check ticker/key">&#9888;</span>' : (!r.hasFx?'<span class="tiny neg" title="No FX rate">&#9888;</span>':'');
+    const warn = !r.hasQuote ? '<span class="tiny neg" title="No live price">&#9888;</span>' : (!r.hasFx?'<span class="tiny neg" title="No FX rate">&#9888;</span>':'');
+    const pills = r.platforms.map(p=>`<span class="pill ${platformClass(p)}">${platformLabel(p)}</span>`).join(' ');
     return `<tr>
       <td><span class="tick">${esc(r.ticker)}</span> ${warn}<div class="tiny muted">${esc(r.name||'')}</div></td>
-      <td><span class="pill ${platformClass(r.platform)}">${platformLabel(r.platform)}</span></td>
+      <td>${pills}</td>
       <td>${r.qty.toLocaleString('en-IE',{maximumFractionDigits:6})}</td>
       <td>${r.avg.toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})} ${esc(r.ccy)}</td>
       <td>${r.price!=null?r.price.toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+esc(r.ccy):'—'}</td>
@@ -443,31 +480,32 @@ function render(){
       <td>${r.value!=null?fmt(r.value):'—'}</td>
       <td class="${cls(r.pl||0)}">${r.pl!=null?fmt(r.pl):'—'}</td>
       <td class="${cls(r.plPct||0)}">${r.plPct!=null?fmtPct(r.plPct):'—'}</td>
-      <td><button class="del" data-del="${esc(r.platform)}|${esc(r.ticker)}">&#10005;</button></td>
+      <td><button class="del" data-del="${esc(r.key)}">&#10005;</button></td>
     </tr>`;
   }).join('');
 
-  $('#posMeta').textContent = hasData ? `${holdings.length} positions` : '';
-  renderAlloc(rows);
+  $('#posMeta').textContent = hasData ? `${crows.length} positions · ${holdings.length} holdings` : '';
+  renderAlloc(rows, crows);
   renderValueChart();
   bindDeletes();
 }
 
-function renderAlloc(rows){
-  const useValue = rows.some(r=>r.value>0);
-  const metric = r => (useValue ? r.value : r.cost) || 0;
-  const valid = rows.filter(r=>metric(r)>0);
-  let labels=[], data=[];
+function renderAlloc(rows, crows){
+  crows = crows || consolidateRows(rows);
+  const useValue = crows.some(r=>r.value>0) || rows.some(r=>r.value>0);
+  const mVal = r => (useValue ? r.value : r.cost) || 0;
+  const palette=['#4C7DF0','#2E9E5B','#E9A13B','#8C5BE0','#2FB0C6','#D6452C','#5B7290','#C64F9C','#3BB273','#E0673B'];
+  let labels=[], data=[], colors=[];
   if(allocMode==='platform'){
     const m={};
-    valid.forEach(r=>{const k=platformLabel(r.platform); m[k]=(m[k]||0)+metric(r);});
-    labels=Object.keys(m); data=Object.values(m);
+    rows.forEach(r=>{const v=mVal(r); if(v>0){const k=platformLabel(r.platform); m[k]=(m[k]||0)+v;}});
+    labels=Object.keys(m); data=Object.values(m); colors=labels.map((_,i)=>palette[i%palette.length]);
   }else{
-    const sorted=[...valid].sort((a,b)=>metric(b)-metric(a));
-    sorted.forEach(r=>{labels.push(r.ticker); data.push(metric(r));});
+    const valid=crows.filter(r=>mVal(r)>0).sort((a,b)=>mVal(b)-mVal(a));
+    const top=valid.slice(0,10), rest=valid.slice(10);
+    top.forEach((r,i)=>{labels.push(r.ticker); data.push(mVal(r)); colors.push(palette[i%palette.length]);});
+    if(rest.length){ labels.push('Others ('+rest.length+')'); data.push(rest.reduce((s,r)=>s+mVal(r),0)); colors.push('#9AA7BD'); }
   }
-  const palette=['#4C7DF0','#2E9E5B','#E9A13B','#8C5BE0','#2FB0C6','#D6452C','#5B7290','#C64F9C','#3BB273','#E0673B','#6C8BD6','#B0894C'];
-  const colors=labels.map((_,i)=>palette[i%palette.length]);
   const total=data.reduce((a,b)=>a+b,0)||1;
   const cfg={
     type:'doughnut',
@@ -505,9 +543,11 @@ function renderValueChart(){
 function bindDeletes(){
   document.querySelectorAll('[data-del]').forEach(b=>{
     b.onclick=()=>{
-      const [p,tk]=b.getAttribute('data-del').split('|');
-      if(!confirm('Remove '+tk+' ('+platformLabel(p)+') from your portfolio?\n\nThis only deletes it from the tracker, not your broker.')) return;
-      holdings=holdings.filter(h=>!(h.platform===p && h.ticker===tk));
+      const key=b.getAttribute('data-del');
+      const affected=holdings.filter(h=>groupKey(h.ticker)===key);
+      const plats=[...new Set(affected.map(h=>platformLabel(h.platform)))].join(' + ');
+      if(!confirm('Remove '+key+' from your portfolio?\n\nThis deletes it from '+(plats||'the tracker')+' — not your broker.')) return;
+      holdings=holdings.filter(h=>groupKey(h.ticker)!==key);
       store.set(LS.hold, holdings); render();
     };
   });
