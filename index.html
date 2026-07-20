@@ -506,6 +506,7 @@ function bindDeletes(){
   document.querySelectorAll('[data-del]').forEach(b=>{
     b.onclick=()=>{
       const [p,tk]=b.getAttribute('data-del').split('|');
+      if(!confirm('Remove '+tk+' ('+platformLabel(p)+') from your portfolio?\n\nThis only deletes it from the tracker, not your broker.')) return;
       holdings=holdings.filter(h=>!(h.platform===p && h.ticker===tk));
       store.set(LS.hold, holdings); render();
     };
