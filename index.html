@@ -178,7 +178,19 @@
       <div class="chart-box"><canvas id="allocChart"></canvas></div>
     </div>
     <div class="panel">
-      <h2>Value over time <span class="tiny muted" id="snapCount"></span></h2>
+      <h2>Performance
+        <span class="seg" id="periodSeg">
+          <button data-period="1D">1D</button>
+          <button data-period="1W">1W</button>
+          <button data-period="1M">1M</button>
+          <button data-period="3M" class="active">3M</button>
+          <button data-period="ALL">All</button>
+        </span>
+      </h2>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin:-2px 0 6px">
+        <span class="tiny" id="perfReturn"></span>
+        <span class="tiny muted" id="snapCount"></span>
+      </div>
       <div class="chart-box"><canvas id="valueChart"></canvas></div>
     </div>
   </div>
@@ -520,18 +532,39 @@ function renderAlloc(rows, crows){
   else allocChart=new Chart($('#allocChart'), cfg);
 }
 
+let perfPeriod = '3M';
+function combinedSeries(){
+  // Merge backfilled history with live daily snapshots (snapshots win on same date)
+  const hist = store.get('pt_history', []);
+  const m={};
+  hist.forEach(p=>{ if(p&&p.date) m[p.date]=p.value; });
+  snapshots.forEach(p=>{ if(p&&p.date) m[p.date]=p.value; });
+  return Object.keys(m).sort().map(d=>({date:d, value:m[d]}));
+}
+function periodBars(p){ return {'1D':1,'1W':5,'1M':21,'3M':63}[p] || 0; }
 function renderValueChart(){
-  $('#snapCount').textContent = snapshots.length ? `${snapshots.length} day${snapshots.length>1?'s':''}` : '';
-  const labels = snapshots.map(s=>s.date);
-  const data = snapshots.map(s=>s.value);
-  const up = data.length<2 || data[data.length-1]>=data[0];
+  const all = combinedSeries();
+  let series = all;
+  const n = periodBars(perfPeriod);
+  if(n>0 && all.length>n+1) series = all.slice(all.length-1-n);
+  const labels = series.map(s=>s.date);
+  const data = series.map(s=>s.value);
+  const first = data[0], last = data[data.length-1];
+  const perfEl = $('#perfReturn');
+  if(data.length>=2 && first>0){
+    const chg=last-first, pct=(last/first-1)*100;
+    const lab = perfPeriod==='ALL' ? 'all time' : 'past '+perfPeriod;
+    perfEl.innerHTML = `<span class="${cls(chg)}">${fmt(chg)} (${fmtPct(pct)})</span> <span class="muted">· ${lab}</span>`;
+  } else { perfEl.innerHTML = '<span class="muted">building history…</span>'; }
+  $('#snapCount').textContent = series.length ? `${labels[0]} → ${labels[labels.length-1]}` : '';
+  const up = data.length<2 || last>=first;
   const line = up?'#2E9E5B':'#D6452C';
   const cfg={
     type:'line',
-    data:{labels, datasets:[{data, borderColor:line, backgroundColor:line+'22', fill:true, tension:.25, pointRadius:data.length>30?0:3, borderWidth:2}]},
+    data:{labels, datasets:[{data, borderColor:line, backgroundColor:line+'22', fill:true, tension:.2, pointRadius:data.length>40?0:2, borderWidth:2}]},
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>' '+fmt(c.parsed.y)}}},
+      plugins:{legend:{display:false}, tooltip:{callbacks:{title:c=>c[0].label, label:c=>' '+fmt(c.parsed.y)}}},
       scales:{x:{ticks:{maxTicksLimit:6, font:{size:10}}, grid:{display:false}},
               y:{ticks:{callback:v=>fmt(v).replace(/\.00$/,''), font:{size:10}}, grid:{color:'#eef1f7'}}}
     }
@@ -657,6 +690,10 @@ $('#autoInterval').onchange=applyAuto;
 document.querySelectorAll('[data-alloc]').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('[data-alloc]').forEach(x=>x.classList.remove('active'));
   b.classList.add('active'); allocMode=b.getAttribute('data-alloc'); render();
+});
+document.querySelectorAll('#periodSeg [data-period]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#periodSeg [data-period]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); perfPeriod=b.getAttribute('data-period'); renderValueChart();
 });
 document.querySelectorAll('#posTable th[data-sort]').forEach(th=>th.onclick=()=>{
   const k=th.getAttribute('data-sort');
