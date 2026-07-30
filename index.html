@@ -843,7 +843,9 @@ function renderWL(crows){
 
   const notes=[];
   if(missing.length) notes.push('No price history for: '+missing.join(', '));
-  const short=rows.filter(r=>r.bars < (WL_BARS[wlPeriod]||0)).length;
+  // Only warn when history is materially shorter than the window (calendars vary by a few days).
+  const want=(WL_BARS[wlPeriod]||0)*0.9;
+  const short=rows.filter(r=>r.bars < want).length;
   if(short) notes.push(short+' position(s) have less history than this window — their earliest cached date is used.');
   notes.push('Left column = € impact (position size matters). Right column = % price move (size-neutral).');
   notes.push('From daily closes'+(f.newest?' through '+f.newest:'')+', scaled to the live price; today’s quantities applied across the whole window.');
