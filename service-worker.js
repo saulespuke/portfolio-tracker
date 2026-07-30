@@ -1,5 +1,5 @@
 /* Portfolio Tracker service worker — offline app shell, network for data */
-const CACHE = 'portfolio-tracker-v9';
+const CACHE = 'portfolio-tracker-v10';
 const SHELL = [
   './',
   './index.html',
@@ -28,13 +28,15 @@ self.addEventListener('activate', event => {
   );
 });
 
+const LIVE_HOSTS = ['finnhub.io','frankfurter','allorigins','stooq','cors.sh','yahoo.com','codetabs'];
+
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
   // Never cache live API calls — always go to network.
-  if (url.hostname.includes('finnhub.io') || url.hostname.includes('frankfurter') || url.hostname.includes('allorigins') || url.hostname.includes('stooq')) {
+  if (LIVE_HOSTS.some(h => url.hostname.includes(h))) {
     return; // default browser handling (network)
   }
 
