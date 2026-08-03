@@ -406,9 +406,13 @@ async function loadQuotes(tickers){
   const uniq = [...new Set(tickers)];
   quotes = {};
   if(!apiKey){
-    // Seed from a stored price snapshot (reliable true value), USD prices.
+    // Price priority (weakest first, each overrides the last):
+    //   1. pt_prices  — a frozen legacy snapshot, never refreshed. Last resort only.
+    //   2. newest cached Yahoo daily close — dated and topped up daily.
+    //   3. stooq live quote — genuinely intraday, when the proxy cooperates.
     const snap = store.get('pt_prices', {});
     Object.keys(snap).forEach(k=>{ quotes[k] = {c:snap[k], d:0, dp:0, pc:snap[k]}; });
+    seedQuotesFromHistory(true);
     // Best-effort single live refresh via a CORS proxy (time-boxed, never blocks).
     try{
       const stooq = 'https://stooq.com/q/l/?s=' + uniq.map(t=>t.toLowerCase()+'.us').join('+') + '&f=sc&h&e=csv';
@@ -439,12 +443,15 @@ async function loadQuotes(tickers){
   }
   seedQuotesFromHistory();
 }
-/* Fill any still-unpriced ticker from the newest cached daily close,
-   so non-US names (e.g. Paris/Frankfurt listings) still get a value. */
-function seedQuotesFromHistory(){
+/* Price a ticker from the newest cached daily close.
+   override=false → only fill gaps (used after a real live feed has spoken).
+   override=true  → also replace the frozen pt_prices snapshot, which never refreshes
+                    and silently drifts stale by weeks. The cached close is dated, so
+                    it is always the better of the two. Also yields a real Day %. */
+function seedQuotesFromHistory(override){
   const raw = store.get(LS.raw, {});
   [...new Set(holdings.map(h=>h.ticker))].forEach(t=>{
-    if(quotes[t] && quotes[t].c>0) return;
+    if(!override && quotes[t] && quotes[t].c>0) return;
     const m = raw[t]; if(!m) return;
     const ds = Object.keys(m).sort(); if(!ds.length) return;
     const last = m[ds[ds.length-1]], prev = ds.length>1 ? m[ds[ds.length-2]] : last;
