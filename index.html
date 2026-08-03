@@ -574,7 +574,12 @@ async function loadLivePrices(force){
       if(!d) continue;
       if(d.map && Object.keys(d.map).length) raw[t]=Object.assign(raw[t]||{}, d.map);
       if(d.live>0){
-        const pc = d.prevClose>0 ? d.prevClose : d.live;
+        // meta.chartPreviousClose is unreliable (it can return the close from the start
+        // of the range, not the prior session). Derive it from the daily series instead.
+        const m=raw[t]||{}, today=todayStr();
+        const prior=Object.keys(m).sort().filter(x=>x<today);
+        const pc = prior.length ? m[prior[prior.length-1]]
+                 : (d.prevClose>0 ? d.prevClose : d.live);
         quotes[t]={c:d.live, d:d.live-pc, dp: pc>0?((d.live/pc-1)*100):0, pc};
         ok++;
       }
