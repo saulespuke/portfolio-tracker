@@ -524,13 +524,17 @@ function histFor(key, ticker){
   const raw = store.get(LS.raw, {});
   return raw[key] || raw[ticker] || raw[String(ticker||'').split('/')[0]] || null;
 }
-async function yahooDaily(sym){
-  const y = 'https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(sym)+'?range=1y&interval=1d';
+/* One Yahoo chart call → {map: {date:close}, live, prevClose}.
+   meta.regularMarketPrice is a genuinely intraday price, so this doubles as the
+   live quote feed and removes any dependence on an API key. */
+async function yahooChart(sym, range, minBars){
+  const y = 'https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(sym)
+          + '?range='+(range||'1y')+'&interval=1d&z='+Date.now();
   const proxies = [ u=>'https://proxy.cors.sh/'+u, u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u) ];
   for(const p of proxies){
     try{
       const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),14000);
-      const r=await fetch(p(y),{signal:ctrl.signal}); const j=await r.json(); clearTimeout(to);
+      const r=await fetch(p(y),{signal:ctrl.signal,cache:'no-store'}); const j=await r.json(); clearTimeout(to);
       const res=j && j.chart && j.chart.result && j.chart.result[0];
       if(!res || !res.timestamp) continue;
       const ts=res.timestamp;
@@ -541,10 +545,51 @@ async function yahooDaily(sym){
         const v = (cl[k]!=null ? cl[k] : (adj ? adj[k] : null));
         if(v!=null && !isNaN(v) && v>0) o[new Date(ts[k]*1000).toISOString().slice(0,10)] = +Number(v).toFixed(6);
       }
-      if(Object.keys(o).length>30) return o;
+      const meta=res.meta||{};
+      if(Object.keys(o).length >= (minBars||1)){
+        return {map:o, live:+meta.regularMarketPrice||0, prevClose:+meta.chartPreviousClose||0};
+      }
     }catch(e){ /* try next proxy */ }
   }
   return null;
+}
+async function yahooDaily(sym){
+  const d = await yahooChart(sym, '1y', 30);
+  return d ? d.map : null;
+}
+/* Live intraday prices for every holding, straight from Yahoo — no API key needed.
+   Also folds the latest daily closes back into the history cache, so the app can
+   never again drift days behind without noticing. */
+let lastLivePull = 0;
+async function loadLivePrices(force){
+  const now = Date.now();
+  if(!force && now - lastLivePull < 120000) return 0;   // don't hammer the proxy on auto-refresh
+  lastLivePull = now;
+  const tickers=[...new Set(holdings.map(h=>h.ticker))];
+  const raw=store.get(LS.raw,{});
+  let done=0, ok=0;
+  for(const t of tickers){
+    for(const c of [t].concat(HIST_VARIANTS[t]||[])){
+      const d=await yahooChart(c,'5d',1);
+      if(!d) continue;
+      if(d.map && Object.keys(d.map).length) raw[t]=Object.assign(raw[t]||{}, d.map);
+      if(d.live>0){
+        const pc = d.prevClose>0 ? d.prevClose : d.live;
+        quotes[t]={c:d.live, d:d.live-pc, dp: pc>0?((d.live/pc-1)*100):0, pc};
+        ok++;
+      }
+      break;
+    }
+    done++;
+    if(done%5===0 || done===tickers.length){
+      store.set(LS.raw, raw);
+      setStatus('Updating live prices… '+done+'/'+tickers.length);
+      render();
+    }
+    await new Promise(r=>setTimeout(r,250));
+  }
+  store.set(LS.raw, raw);
+  return ok;
 }
 let histLoading=false;
 async function loadHistory(){
@@ -613,6 +658,13 @@ function histFreshness(){
     if(ds[ds.length-1]>newest) newest=ds[ds.length-1];
   });
   return {newest, count, days};
+}
+/* Surface how fresh the prices actually are — silent staleness was the whole bug. */
+function priceAsOf(){
+  const f=histFreshness();
+  if(!f.newest) return '';
+  const ageDays=Math.round((Date.now()-Date.parse(f.newest+'T00:00:00Z'))/864e5);
+  return f.newest + (ageDays>=3 ? ' (stale)' : '');
 }
 
 /* ---------- Render ---------- */
@@ -876,13 +928,17 @@ function bindDeletes(){
 async function refresh(){
   if(holdings.length===0){ render(); return; }
   if(!apiKey){
-    setStatus('Updating live prices (free feed)…');
+    setStatus('Updating live prices…');
     try{ await loadFx(holdings.map(h=>h.ccy)); }catch(e){}
     try{ await loadQuotes(holdings.map(h=>h.ticker)); }catch(e){}
+    render();
+    try{ await loadLivePrices(); }catch(e){ console.warn('live pull failed', e); }
     const rows0=computeRows(); const t0=totals(rows0); if(t0.ok) recordSnapshot(t0.value);
     render();
     const miss=rows0.filter(r=>!r.hasQuote).length;
-    setStatus('Updated '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'})+' · free feed'+(miss?` · ${miss} not priced`:''), miss>0);
+    const stamp=priceAsOf();
+    setStatus('Updated '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'})
+      +(stamp?' · prices '+stamp:'')+(miss?` · ${miss} not priced`:''), miss>0);
     maybeAutoLoadHistory();
     return;
   }
@@ -909,7 +965,8 @@ function maybeAutoLoadHistory(){
   if(autoHistTried || histLoading) return;
   autoHistTried=true;
   const f=histFreshness();
-  const cutoff=new Date(Date.now()-4*864e5).toISOString().slice(0,10);
+  // 4 days was far too lax — it let the cache sit two full sessions behind unnoticed.
+  const cutoff=new Date(Date.now()-1*864e5).toISOString().slice(0,10);
   if(f.count===0 || f.days<200 || f.newest < cutoff) loadHistory();
   else rebuildValueHistory();
 }
