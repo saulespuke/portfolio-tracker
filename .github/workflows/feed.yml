@@ -1,0 +1,39 @@
+name: Update data feed
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'          # every 30 min; GitHub may delay a few minutes
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/**'
+      - 'data/tickers.json'
+      - '.github/workflows/feed.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: feed
+  cancel-in-progress: false
+
+jobs:
+  feed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet requests
+      - run: python scripts/build_feed.py
+      - name: Commit feed if changed
+        run: |
+          git config user.name  'feed-bot'
+          git config user.email 'feed-bot@users.noreply.github.com'
+          git add data/feed.json
+          if git diff --cached --quiet; then echo "feed unchanged"; exit 0; fi
+          git commit -m "feed: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
