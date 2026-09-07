@@ -235,11 +235,13 @@ def main():
         kws = keywords(base, entry['name'])
         gq = ALIAS.get(base, [None])[0] or (entry['name'] or base)
         seen_titles, news = set(), {}
-        # tagged Yahoo items first, then Google News, then Yahoo RSS — later duplicates lose
-        for n in search_news(sym, base) + google_news(gq) + rss_news(sym):
+        # Google News first (most on-topic, real publisher names), then Yahoo's tagged search
+        # items, then Yahoo RSS. Yahoo tags any story that merely mentions a ticker, so every
+        # item must name the company in its headline or summary. Later duplicates lose.
+        for n in google_news(gq) + search_news(sym, base) + rss_news(sym):
             if n['ts'] < cutoff or not n['url'] or n['url'] in news:
                 continue
-            if not n.get('tagged') and not relevant(n, kws):
+            if not relevant(n, kws):
                 continue
             nt = norm_title(n['title'])
             if nt in seen_titles:
