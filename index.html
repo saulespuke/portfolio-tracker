@@ -114,6 +114,73 @@
   .wl-sub{text-align:right;font-size:11px}
   @media(max-width:820px){ .wl-grid{grid-template-columns:1fr;gap:20px} }
 
+  /* ---- View switch (Dashboard / News) ---- */
+  .views{display:flex;gap:4px;background:#ffffff1a;border:1px solid #ffffff33;border-radius:10px;padding:3px}
+  .views button{padding:6px 14px;font-size:13px;background:transparent;color:#c7d4ec;border-radius:7px;position:relative}
+  .views button.active{background:#fff;color:var(--navy)}
+  .views .badge{display:inline-block;min-width:18px;padding:1px 6px;margin-left:6px;border-radius:10px;
+    background:var(--accent);color:#fff;font-size:10.5px;font-weight:800;line-height:16px;text-align:center;vertical-align:1px}
+  .views button.active .badge{background:var(--accent)}
+  .view{display:none} .view.active{display:block}
+
+  /* ---- News ---- */
+  .news-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .news-top .status{margin-left:auto}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+  .chip{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#eef2f9;color:var(--muted);
+    border:1px solid transparent;cursor:pointer;position:relative;user-select:none}
+  .chip:hover{background:#e4eaf5}
+  .chip.active{background:var(--navy);color:#fff}
+  .chip .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:5px;vertical-align:1px}
+  .chip.active .dot{background:#8fb0ff}
+  .chip .cnt{font-weight:600;opacity:.75;margin-left:4px}
+  .earn-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .earn{display:flex;flex-direction:column;gap:1px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;
+    background:#fff;min-width:118px;font-size:12px;font-variant-numeric:tabular-nums}
+  .earn b{font-size:13px}
+  .earn.soon{border-color:#f2c48c;background:#fff8ee}
+  .earn.today{border-color:var(--accent);background:#eef3ff}
+  .earn .when{color:var(--muted);font-size:11px}
+  .news-item{display:grid;grid-template-columns:1fr 150px;gap:14px;padding:12px 10px 12px 12px;
+    border-bottom:1px solid var(--line);border-left:3px solid transparent}
+  .news-item:last-child{border-bottom:none}
+  .news-item:hover{background:#f7f9fd}
+  .news-item.new{border-left-color:var(--accent);background:#f8faff}
+  .news-item.new:hover{background:#f1f5ff}
+  .news-item h4{margin:0 0 4px;font-size:14px;font-weight:700;line-height:1.35}
+  .news-item h4 a{color:var(--ink);text-decoration:none}
+  .news-item h4 a:hover{color:var(--accent);text-decoration:underline}
+  .news-item h4 a:visited{color:#4a5670}
+  .news-meta{font-size:11.5px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .news-meta .src{font-weight:700;color:#4a5670}
+  .news-sum{font-size:12.5px;color:#3b4a62;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .ttag{font-size:10px;padding:1px 7px;border-radius:20px;font-weight:800;letter-spacing:.3px;background:#e7f0ff;color:#2b5cd6;cursor:pointer}
+  .ttag.other{background:#eef2f9;color:var(--muted)}
+  .pill.new{background:var(--accent);color:#fff}
+  .news-ctx{text-align:right;font-size:12px;font-variant-numeric:tabular-nums;border-left:1px solid var(--line);padding-left:12px;
+    display:flex;flex-direction:column;justify-content:center;gap:2px}
+  .news-ctx .t{font-weight:800;font-size:13px}
+  .news-ctx .v{color:var(--muted)}
+  .news-ctx .d{font-weight:700}
+  .news-body{display:flex;gap:12px;align-items:flex-start}
+  .news-thumb{width:64px;height:64px;border-radius:8px;object-fit:cover;flex:none;background:#eef2f9}
+  .news-group{margin-bottom:10px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .news-group summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:center;
+    padding:11px 14px;background:#f7f9fd;font-size:13px;font-variant-numeric:tabular-nums}
+  .news-group summary::-webkit-details-marker{display:none}
+  .news-group summary:hover{background:#eef2f9}
+  .news-group summary .gt{font-weight:800}
+  .news-group summary .gn{color:var(--muted);font-size:11.5px;margin-left:6px;font-weight:600}
+  .news-group summary .arrow{color:var(--muted);font-size:11px;transition:.15s}
+  .news-group[open] summary .arrow{transform:rotate(90deg)}
+  .news-group .news-item{padding-left:14px;grid-template-columns:1fr}
+  .news-group .news-ctx{display:none}
+  @media(max-width:820px){
+    .news-item{grid-template-columns:1fr}
+    .news-ctx{border-left:none;padding-left:0;flex-direction:row;justify-content:flex-start;gap:10px;text-align:left}
+    .news-group summary{grid-template-columns:1fr auto;row-gap:4px}
+  }
+
   /* Modal */
   .modal-bg{position:fixed;inset:0;background:#0b1428cc;display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
   .modal-bg.open{display:flex}
@@ -148,6 +215,10 @@
     </div>
   </div>
   <div class="hdr-actions">
+    <span class="views" id="viewSeg">
+      <button data-view="dash" class="active">Dashboard</button>
+      <button data-view="news">News<span class="badge" id="newsBadge" style="display:none">0</span></button>
+    </span>
     <button class="btn-light" id="btnInstall" style="display:none">&#8595; Install app</button>
     <button class="btn-ghost" id="btnHoldings">Holdings</button>
     <button class="btn-ghost" id="btnSettings">Settings</button>
@@ -171,6 +242,7 @@
     <span class="status" id="status">Not updated yet</span>
   </div>
 
+  <div class="view active" id="viewDash">
   <div class="kpis">
     <div class="kpi">
       <div class="label">Total Value</div>
@@ -274,10 +346,37 @@
       <button class="btn-primary" id="btnAddFirst" style="margin-top:6px">Add holdings</button>
     </div>
   </div>
+  </div><!-- /viewDash -->
+
+  <div class="view" id="viewNews">
+    <div class="panel" id="earnPanel" style="margin-bottom:20px">
+      <h2>Upcoming earnings <span class="tiny muted" id="earnMeta"></span></h2>
+      <div class="earn-strip" id="earnStrip"><span class="tiny muted">Loading…</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>News on your holdings
+        <span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn-light" id="btnSeenAll" style="padding:5px 10px;font-size:11px;font-weight:600">Mark all seen</button>
+          <button class="btn-light" id="btnNewsRefresh" style="padding:5px 10px;font-size:11px;font-weight:600">Refresh news</button>
+          <span class="seg" id="newsSeg">
+            <button data-nv="timeline" class="active">Timeline</button>
+            <button data-nv="grouped">By stock</button>
+          </span>
+        </span>
+      </h2>
+      <div class="news-top">
+        <span class="tiny muted" id="newsMeta"></span>
+      </div>
+      <div class="chips" id="newsChips"></div>
+      <div id="newsList"></div>
+      <div class="tiny muted" id="newsNote" style="margin-top:12px"></div>
+    </div>
+  </div><!-- /viewNews -->
 </div>
 
 <footer>
-  Prices via Finnhub · FX via Frankfurter (ECB) · daily history via Yahoo · data stored only in this browser.
+  Prices, history, news &amp; earnings from Yahoo Finance via this repo’s data feed (refreshed ~30 min) · FX via Frankfurter (ECB) · holdings stored only in this browser.
   Not investment advice. <span id="fxNote"></span>
 </footer>
 
@@ -286,9 +385,9 @@
   <div class="modal">
     <h2>Settings</h2>
     <p class="hint">Your Finnhub API key stays in this browser only.</p>
-    <label class="fld" for="apiKey">Finnhub API key</label>
-    <input type="password" id="apiKey" placeholder="paste your free key from finnhub.io" autocomplete="off" />
-    <div class="note">Get a free key at <a href="https://finnhub.io/register" target="_blank" rel="noopener">finnhub.io/register</a> — the free tier covers US stocks and forex. Free keys are limited to ~60 calls/min, so large portfolios refresh in small batches automatically.</div>
+    <label class="fld" for="apiKey">Finnhub API key <span class="muted" style="font-weight:600">— optional</span></label>
+    <input type="password" id="apiKey" placeholder="optional — leave empty" autocomplete="off" />
+    <div class="note">Not required: prices, news and earnings dates come from the repo’s own data feed (refreshed every ~30 min by GitHub). A free key from <a href="https://finnhub.io/register" target="_blank" rel="noopener">finnhub.io</a> only adds Finnhub company news for tickers missing from the feed.</div>
     <label class="fld" for="baseCcy">Base currency</label>
     <select id="baseCcy">
       <option value="EUR" selected>EUR (€)</option>
@@ -342,6 +441,11 @@ const LS = {
   intv: 'pt_interval',
   raw:  'pt_hist_raw',
   hist: 'pt_history',
+  news: 'pt_news',        // {updated, items:{TICKER:[item]}}
+  seen: 'pt_news_seen',   // {itemId: unixMs}
+  earn: 'pt_earnings',    // {updated, list:[{symbol,date,hour,epsEstimate,...}]}
+  view: 'pt_view',        // 'dash' | 'news'
+  nview:'pt_news_view',   // 'timeline' | 'grouped'
 };
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
@@ -530,10 +634,11 @@ function histFor(key, ticker){
 async function yahooChart(sym, range, minBars){
   const y = 'https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(sym)
           + '?range='+(range||'1y')+'&interval=1d&z='+Date.now();
-  const proxies = [ u=>'https://proxy.cors.sh/'+u, u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u) ];
+  // allorigins first: proxy.cors.sh has been failing outright since ~Sep 2026 (kept as a fallback).
+  const proxies = [ u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u), u=>'https://proxy.cors.sh/'+u ];
   for(const p of proxies){
     try{
-      const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),14000);
+      const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),20000);
       const r=await fetch(p(y),{signal:ctrl.signal,cache:'no-store'}); const j=await r.json(); clearTimeout(to);
       const res=j && j.chart && j.chart.result && j.chart.result[0];
       if(!res || !res.timestamp) continue;
@@ -748,6 +853,7 @@ function render(){
   renderValueChart();
   renderWL(crows);
   bindDeletes();
+  if(currentView==='news') renderNews();   // keep Day % / value beside headlines live
 }
 
 function renderAlloc(rows, crows){
@@ -930,38 +1036,40 @@ function bindDeletes(){
 }
 
 /* ---------- Refresh ---------- */
+/* One path regardless of API key: Finnhub (if keyed) or the cached closes give a
+   fast first paint, then Yahoo's intraday pull refines every ticker and tops up the
+   daily cache. The key is no longer an alternative price source — it exists for the
+   News tab, and must never switch the Yahoo live feed off (WLN only prices via Yahoo). */
+let refreshing=false;
 async function refresh(){
   if(holdings.length===0){ render(); return; }
-  if(!apiKey){
-    setStatus('Updating live prices…');
+  if(refreshing) return;
+  refreshing=true;
+  setStatus('Updating live prices…');
+  $('#btnRefresh').disabled=true;
+  try{
     try{ await loadFx(holdings.map(h=>h.ccy)); }catch(e){}
     try{ await loadQuotes(holdings.map(h=>h.ticker)); }catch(e){}
+    await loadFeed();
+    const fed=applyFeedPrices();
     render();
-    try{ await loadLivePrices(); }catch(e){ console.warn('live pull failed', e); }
+    // The proxy pull is slow and flaky; only run it when the feed can't cover us.
+    const needLive = fed < [...new Set(holdings.map(h=>h.ticker))].length || feedAge() > FEED_FRESH_MS;
+    if(needLive){ try{ await loadLivePrices(); }catch(e){ console.warn('live pull failed', e); } }
     const rows0=computeRows(); const t0=totals(rows0); if(t0.ok) recordSnapshot(t0.value);
     render();
     const miss=rows0.filter(r=>!r.hasQuote).length;
-    const stamp=priceAsOf();
+    const stamp = fed && !needLive ? feedStamp()+' (feed)' : priceAsOf();
     setStatus('Updated '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'})
       +(stamp?' · prices '+stamp:'')+(miss?` · ${miss} not priced`:''), miss>0);
-    maybeAutoLoadHistory();
-    return;
-  }
-  setStatus('Updating…');
-  $('#btnRefresh').disabled=true;
-  try{
-    await loadFx(holdings.map(h=>h.ccy));
-    await loadQuotes(holdings.map(h=>h.ticker));
-    const rows=computeRows(); const t=totals(rows);
-    if(t.ok) recordSnapshot(t.value);
-    render();
-    const missing = rows.filter(r=>!r.hasQuote).length;
-    setStatus('Updated ' + new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}) + (missing?` · ${missing} ticker(s) had no quote`:''), missing>0);
   }catch(e){
     console.error(e); setStatus('Update failed — '+e.message, true);
   }finally{
     $('#btnRefresh').disabled=false;
+    refreshing=false;
     maybeAutoLoadHistory();
+    // News piggybacks on the price refresh, quietly, when its cache is old enough.
+    if(currentView==='news' || newsAge()>30*60e3) loadNews(false).catch(()=>{});
   }
 }
 /* Top up the daily history at most once a day, quietly. */
@@ -985,6 +1093,407 @@ function recordSnapshot(value){
 function setStatus(msg, warn){
   const el=$('#status'); el.textContent=msg; el.style.color=warn?'#ffb4a3':'#9fb0cc';
 }
+
+/* ---------- Same-origin data feed (built by .github/workflows/feed.yml) ----------
+   A GitHub Action refreshes data/feed.json every ~30 min with prices, 3 months of
+   closes, headlines and earnings dates for every ticker in data/tickers.json.
+   Same origin → no CORS proxy, no API key, loads in milliseconds. The proxy paths
+   below remain as fallbacks for tickers missing from the feed or when it is stale. */
+let feed = null;
+const FEED_FRESH_MS = 20*60e3;
+function feedAge(){ return feed && feed.updated ? Date.now()-Date.parse(feed.updated) : Infinity; }
+function feedStamp(){ return feed && feed.updated ? new Date(feed.updated).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}) : ''; }
+async function loadFeed(){
+  try{
+    const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),8000);
+    const r=await fetch('./data/feed.json?z='+Date.now(),{signal:ctrl.signal,cache:'no-store'}); clearTimeout(to);
+    if(!r.ok) return null;
+    const j=await r.json();
+    if(j && j.tickers) feed=j;
+  }catch(e){ console.warn('feed unavailable', e); }
+  return feed;
+}
+/* Seed quotes + the daily close cache from the feed. Returns how many tickers it priced. */
+function applyFeedPrices(){
+  if(!feed) return 0;
+  const raw=store.get(LS.raw,{}); let n=0;
+  [...new Set(holdings.map(h=>h.ticker))].forEach(t=>{
+    const e=feed.tickers[t]; if(!e || !e.quote || !(e.quote.price>0)) return;
+    const h=holdings.find(x=>x.ticker===t);
+    if(h && e.ccy && h.ccy!==e.ccy && !(h.ccy==='GBX'&&e.ccy==='GBp')) return;   // wrong listing currency — leave it alone
+    if(e.closes && Object.keys(e.closes).length) raw[t]=Object.assign(raw[t]||{}, e.closes);
+    const pc=e.quote.prevClose>0?e.quote.prevClose:e.quote.price;
+    quotes[t]={c:e.quote.price, d:e.quote.price-pc, dp: pc>0?((e.quote.price/pc-1)*100):0, pc};
+    n++;
+  });
+  if(n) store.set(LS.raw, raw);
+  return n;
+}
+
+/* ---------- Views (Dashboard / News) ---------- */
+let currentView = store.get(LS.view, 'dash');
+function switchView(v){
+  if(v===currentView && $('#view'+(v==='news'?'News':'Dash')).classList.contains('active')) return;
+  if(currentView==='news' && v!=='news') markAllSeen(true);   // leaving News = "I've seen these"
+  currentView = v; store.set(LS.view, v);
+  document.querySelectorAll('#viewSeg [data-view]').forEach(b=>b.classList.toggle('active', b.getAttribute('data-view')===v));
+  $('#viewDash').classList.toggle('active', v==='dash');
+  $('#viewNews').classList.toggle('active', v==='news');
+  if(v==='news'){ renderEarnings(); loadNews(false).then(()=>{ if(feed && !earnCache.updated) earningsFromFeed(); }).catch(()=>{}); }
+  window.scrollTo(0,0);
+}
+
+/* ---------- News & earnings ---------- */
+/* Source: Finnhub company-news when a key is set (US listings on the free tier);
+   any ticker that yields nothing — or every ticker when there is no key — falls back
+   to Yahoo's search feed through the same proxy chain the price history uses.
+   Everything is cached in localStorage so the tab opens instantly and refreshes
+   quietly in the background; "seen" state drives the badge in the header. */
+const NEWS_PER_TICKER = 12, NEWS_MAX_DAYS = 14, NEWS_FRESH_MS = 15*60e3, EARN_FRESH_MS = 24*3600e3;
+let newsView = store.get(LS.nview, 'timeline');
+let newsFilter = 'ALL';
+let newsLoading = false, earnLoading = false;
+let newsCache = store.get(LS.news, {updated:0, items:{}});
+let seenMap   = store.get(LS.seen, {});
+let earnCache = store.get(LS.earn, {updated:0, list:[]});
+const openGroups = new Set();
+const sleep = ms => new Promise(r=>setTimeout(r, ms));
+
+function newsAge(){ return Date.now() - (newsCache.updated||0); }
+/* One entry per consolidated position: which symbol to ask each source for. */
+function newsTickers(){
+  const seen = new Set(), out = [];
+  holdings.forEach(h=>{
+    const key = groupKey(h.ticker); if(seen.has(key)) return; seen.add(key);
+    out.push({ key, ticker: groupTicker(key), name: h.name||'',
+      fhSym: h.ticker,                                              // Finnhub symbol (GOOGL/GOOG both work)
+      ySym: (HIST_VARIANTS[h.ticker]||[])[0] || h.ticker });        // Yahoo symbol (WLN → WLN.PA)
+  });
+  return out;
+}
+async function fh(path, params){
+  const u = 'https://finnhub.io/api/v1/'+path+'?'+new URLSearchParams(Object.assign({}, params, {token:apiKey}));
+  for(let attempt=0; attempt<2; attempt++){
+    const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(), 12000);
+    const r = await fetch(u, {signal:ctrl.signal, cache:'no-store'}); clearTimeout(to);
+    if(r.status===429){ await sleep(15000); continue; }          // free tier: 60 calls/min
+    if(!r.ok) throw new Error('Finnhub HTTP '+r.status);
+    return r.json();
+  }
+  throw new Error('Finnhub rate limit');
+}
+/* Yahoo through the proxy chain. As of Sep 2026 proxy.cors.sh fails instantly and
+   allorigins is the only proxy that answers, so it goes first; it rate-limits parallel
+   calls, hence news is fetched one ticker at a time with a generous timeout. */
+async function proxied(url, timeoutMs){
+  const proxies = [ u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u), u=>'https://proxy.cors.sh/'+u ];
+  for(const p of proxies){
+    try{
+      const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(), timeoutMs||20000);
+      const r=await fetch(p(url),{signal:ctrl.signal,cache:'no-store'}); const t=await r.text(); clearTimeout(to);
+      if(r.ok && t && t.length>20) return t;
+    }catch(e){ /* try next proxy */ }
+  }
+  return null;
+}
+async function yahooNews(sym){
+  // 1) search feed — JSON, has publisher + thumbnail
+  const y = 'https://query1.finance.yahoo.com/v1/finance/search?q='+encodeURIComponent(sym)
+          + '&newsCount='+NEWS_PER_TICKER+'&quotesCount=0&enableFuzzyQuery=false&z='+Date.now();
+  let t = await proxied(y);
+  if(t){ try{ const j=JSON.parse(t); if(j && Array.isArray(j.news) && j.news.length) return j.news; }catch(e){} }
+  // 2) RSS headline feed — works for European listings the search feed ignores
+  const rss = 'https://feeds.finance.yahoo.com/rss/2.0/headline?s='+encodeURIComponent(sym)+'&region=US&lang=en-US';
+  t = await proxied(rss);
+  if(t && t.indexOf('<rss')>=0){
+    try{
+      const doc=new DOMParser().parseFromString(t,'text/xml');
+      const items=[...doc.querySelectorAll('item')].map(it=>{
+        const g=s=>{ const n=it.querySelector(s); return n?n.textContent.trim():''; };
+        const link=g('link'), title=g('title'), when=Date.parse(g('pubDate'))||0;
+        return link&&title ? {uuid:g('guid')||link, title, link, publisher:'Yahoo Finance', providerPublishTime:Math.floor(when/1000), summary:g('description')} : null;
+      }).filter(Boolean);
+      if(items.length) return items;
+    }catch(e){}
+  }
+  return t===null ? null : [];
+}
+function normFinnhub(key, j){
+  if(!j || !j.headline || !j.url) return null;
+  return { id:'fh'+(j.id||j.url), t:key, title:String(j.headline).trim(), url:j.url, src:j.source||'',
+           ts:(j.datetime||0)*1000, sum:String(j.summary||'').replace(/\s+/g,' ').slice(0,320), img:j.image||'' };
+}
+function normYahoo(key, n){
+  if(!n || !n.title || !n.link) return null;
+  let img=''; try{ const rs=(n.thumbnail&&n.thumbnail.resolutions)||[]; if(rs.length) img=rs[rs.length-1].url||''; }catch(e){}
+  return { id:'y'+(n.uuid||n.link), t:key, title:String(n.title).trim(), url:n.link, src:n.publisher||'',
+           ts:(n.providerPublishTime||0)*1000, sum:String(n.summary||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').slice(0,320), img };
+}
+function newsStatus(msg){ const el=$('#newsMeta'); if(el) el.textContent=msg; }
+async function loadNews(force){
+  if(newsLoading || !holdings.length) return;
+  const haveCache = Object.keys(newsCache.items||{}).length>0;
+  if(!force && haveCache && newsAge() < NEWS_FRESH_MS){ renderNews(); return; }
+  newsLoading=true;
+  const btn=$('#btnNewsRefresh'); if(btn){ btn.disabled=true; btn.textContent='Loading…'; }
+  if(haveCache) renderNews(); else newsStatus('Loading news…');
+  while(refreshing) await sleep(500);              // don't compete with the price pull for the proxy
+  if(force || !feed || feedAge() > NEWS_FRESH_MS) await loadFeed();
+  const list=newsTickers(), failed=[];
+  const items=Object.assign({}, newsCache.items||{});   // keep old headlines until each ticker is replaced
+  const cutoff = Date.now() - NEWS_MAX_DAYS*864e5;
+  const to = todayStr(), from = new Date(cutoff).toISOString().slice(0,10);
+  const one = async x=>{
+    let arr=null;
+    const fe = feed && (feed.tickers[x.fhSym] || feed.tickers[x.key]);
+    if(fe && Array.isArray(fe.news)){                            // feed first: instant, no proxy
+      arr = fe.news.map(n=>n && n.url && n.title ? {id:'f'+(n.id||n.url), t:x.key, title:n.title, url:n.url, src:n.src||'', ts:(n.ts||0)*1000, sum:n.sum||'', img:n.img||''} : null).filter(Boolean);
+    }
+    if(!arr && apiKey){
+      try{ const j=await fh('company-news',{symbol:x.fhSym, from, to});
+           if(Array.isArray(j)) arr=j.map(n=>normFinnhub(x.key,n)).filter(Boolean); }
+      catch(e){ console.warn('news fail', x.ticker, e); }
+    }
+    if(!arr || !arr.length){                       // no key, non-US listing, or Finnhub error
+      const y=await yahooNews(x.ySym);
+      if(y) arr=(arr||[]).concat(y.map(n=>normYahoo(x.key,n)).filter(Boolean));
+    }
+    if(arr===null){ failed.push(x.ticker); if(!items[x.key]) items[x.key]=[]; return; }
+    const byUrl={};
+    arr.filter(n=>n.ts>=cutoff).sort((a,b)=>b.ts-a.ts).forEach(n=>{ if(!byUrl[n.url]) byUrl[n.url]=n; });
+    items[x.key]=Object.values(byUrl).slice(0,NEWS_PER_TICKER);
+  };
+  // Feed-covered tickers resolve instantly, so do them all at once; the rest go through
+  // Finnhub in small batches or the Yahoo proxy one at a time, rendering progressively.
+  const covered = list.filter(x=>feed && ((feed.tickers[x.fhSym]||feed.tickers[x.key])||{}).news);
+  const batch = covered.length===list.length ? list.length : (apiKey ? 5 : 1);
+  for(let i=0;i<list.length;i+=batch){
+    await Promise.all(list.slice(i,i+batch).map(one));
+    const n=Math.min(i+batch,list.length);
+    newsCache={updated:newsCache.updated, items, failed:newsCache.failed||[]};
+    store.set(LS.news, newsCache);
+    if(currentView==='news') renderNews();
+    newsStatus('Loading news… '+n+'/'+list.length);
+    updateBadge();
+    if(i+batch<list.length) await sleep(apiKey?1200:150);
+  }
+  newsCache={updated:Date.now(), items, failed};
+  store.set(LS.news, newsCache);
+  pruneSeen();
+  newsLoading=false;
+  if(btn){ btn.disabled=false; btn.textContent='Refresh news'; }
+  renderNews(); updateBadge();
+  if(feed) earningsFromFeed();
+  else if(apiKey && Date.now()-(earnCache.updated||0) > EARN_FRESH_MS) loadEarnings().catch(()=>{});
+}
+/* Earnings dates straight from the feed — no key needed. */
+function earningsFromFeed(){
+  if(!feed) return;
+  const today=todayStr(), out=[];
+  newsTickers().forEach(x=>{
+    const fe=feed.tickers[x.fhSym]||feed.tickers[x.key]; const e=fe && fe.earnings;
+    if(e && e.date && e.date>=today) out.push({key:x.key, ticker:x.ticker, date:e.date, rangeEnd:e.range_end||null, hour:'', eps:e.eps, rev:e.rev});
+  });
+  earnCache={updated:Date.parse(feed.updated)||Date.now(), list:out, src:'feed'};
+  store.set(LS.earn, earnCache);
+  renderEarnings();
+}
+/* Earnings calendar: one Finnhub call per position, at most once a day. */
+async function loadEarnings(){
+  if(earnLoading || !apiKey || !holdings.length) return;
+  earnLoading=true;
+  const list=newsTickers(), out=[];
+  const today=todayStr(), to=new Date(Date.now()+90*864e5).toISOString().slice(0,10);
+  const batch=4;
+  for(let i=0;i<list.length;i+=batch){
+    await Promise.all(list.slice(i,i+batch).map(async x=>{
+      try{
+        const j=await fh('calendar/earnings',{symbol:x.fhSym, from:today, to});
+        const rows=(j&&j.earningsCalendar)||[];
+        rows.filter(r=>r.date>=today).sort((a,b)=>a.date<b.date?-1:1).slice(0,1)
+            .forEach(r=>out.push({key:x.key, ticker:x.ticker, date:r.date, hour:r.hour||'', eps:r.epsEstimate, rev:r.revenueEstimate, q:r.quarter, y:r.year}));
+      }catch(e){ console.warn('earnings fail', x.ticker, e); }
+    }));
+    if(i+batch<list.length) await sleep(1500);
+  }
+  earnCache={updated:Date.now(), list:out};
+  store.set(LS.earn, earnCache);
+  earnLoading=false;
+  renderEarnings();
+}
+
+/* ---- seen tracking ---- */
+function allNewsItems(){ return Object.values(newsCache.items||{}).flat(); }
+function unseenCount(){ const ids=new Set(); allNewsItems().forEach(n=>{ if(!seenMap[n.id]) ids.add(n.url); }); return ids.size; }
+function markAllSeen(quiet){
+  const now=Date.now(); let ch=false;
+  allNewsItems().forEach(n=>{ if(!seenMap[n.id]){ seenMap[n.id]=now; ch=true; } });
+  if(ch) store.set(LS.seen, seenMap);
+  updateBadge();
+  if(!quiet) renderNews();
+}
+function markSeen(id){ if(seenMap[id]) return; seenMap[id]=Date.now(); store.set(LS.seen, seenMap); updateBadge(); }
+function pruneSeen(){
+  const keep=new Set(allNewsItems().map(n=>n.id)), cut=Date.now()-45*864e5, o={};
+  Object.keys(seenMap).forEach(id=>{ if(keep.has(id) || seenMap[id]>cut) o[id]=seenMap[id]; });
+  seenMap=o; store.set(LS.seen, seenMap);
+}
+function updateBadge(){
+  const n=unseenCount(), el=$('#newsBadge');
+  el.textContent = n>99?'99+':n; el.style.display = n>0?'':'none';
+  document.title = (n>0?'('+n+') ':'')+'Portfolio Tracker';
+}
+
+/* ---- render ---- */
+function ago(ts){
+  const d=Date.now()-ts;
+  if(d<60e3) return 'just now';
+  if(d<3600e3) return Math.round(d/60e3)+'m ago';
+  if(d<24*3600e3) return Math.round(d/3600e3)+'h ago';
+  if(d<7*864e5) return Math.round(d/864e5)+'d ago';
+  return new Date(ts).toLocaleDateString('en-IE',{day:'numeric',month:'short'});
+}
+function ctxMap(){
+  const m={};
+  consolidateRows(computeRows()).forEach(r=>{ m[r.key]={ticker:r.ticker, name:r.name, dayPct:r.dayPct, value:r.value, price:r.price, ccy:r.ccy}; });
+  return m;
+}
+function newsItemHTML(n, tags, ctx, primary){
+  const isNew=!seenMap[n.id];
+  const c=ctx[primary];
+  const tagHtml=tags.map(k=>`<span class="ttag${k===primary?'':' other'}" data-filter="${esc(k)}">${esc((ctx[k]&&ctx[k].ticker)||k)}</span>`).join(' ');
+  const when=new Date(n.ts).toLocaleString('en-IE',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  const ctxHtml = c ? `<div class="news-ctx">
+      <div class="t">${esc(c.ticker)}</div>
+      <div class="d ${cls(c.dayPct||0)}">${c.dayPct!=null?fmtPct(c.dayPct)+' today':'—'}</div>
+      <div class="v">${c.value!=null?fmt(c.value):'—'}${c.price!=null?' · '+c.price.toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+esc(c.ccy):''}</div>
+    </div>` : '<div class="news-ctx"></div>';
+  return `<div class="news-item${isNew?' new':''}" data-id="${esc(n.id)}">
+    <div class="news-body">
+      ${n.img?`<img class="news-thumb" src="${esc(n.img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}
+      <div style="min-width:0">
+        <h4><a href="${esc(n.url)}" target="_blank" rel="noopener" data-open="${esc(n.id)}">${esc(n.title)}</a></h4>
+        <div class="news-meta">${isNew?'<span class="pill new">NEW</span>':''}<span class="src">${esc(n.src)}</span><span title="${esc(when)}">· ${ago(n.ts)}</span><span>·</span>${tagHtml}</div>
+        ${n.sum?`<div class="news-sum">${esc(n.sum)}</div>`:''}
+      </div>
+    </div>
+    ${ctxHtml}
+  </div>`;
+}
+function renderNews(){
+  const listEl=$('#newsList'); if(!listEl) return;
+  const ctx=ctxMap();
+  const tl=newsTickers();
+  const items=newsCache.items||{};
+  // order positions by value, largest first — same priority as the allocation chart
+  const order=[...tl].sort((a,b)=>((ctx[b.key]&&ctx[b.key].value)||0)-((ctx[a.key]&&ctx[a.key].value)||0));
+  const allIds=allNewsItems();
+  if(!allIds.length && !newsLoading){
+    listEl.innerHTML='<div class="empty"><h3>No news loaded yet</h3><p class="muted">'+(apiKey?'Press “Refresh news”.':'Add a Finnhub key in Settings for company news and earnings dates, or press “Refresh news” to use the Yahoo feed.')+'</p></div>';
+    $('#newsChips').innerHTML=''; $('#newsNote').textContent=''; if(!newsLoading) newsStatus(''); return;
+  }
+  // chips
+  const totalNew=unseenCount(), totalUniq=new Set(allIds.map(n=>n.url)).size;   // one article can tag several holdings
+  let chips=`<span class="chip${newsFilter==='ALL'?' active':''}" data-filter="ALL">All<span class="cnt">${totalUniq}</span>${totalNew?'<span class="dot"></span>':''}</span>`;
+  order.forEach(x=>{
+    const arr=items[x.key]||[]; const nw=arr.filter(n=>!seenMap[n.id]).length;
+    chips+=`<span class="chip${newsFilter===x.key?' active':''}" data-filter="${esc(x.key)}" title="${esc(x.name)}">${esc(x.ticker)}<span class="cnt">${arr.length}</span>${nw?'<span class="dot"></span>':''}</span>`;
+  });
+  $('#newsChips').innerHTML=chips;
+
+  const keys = newsFilter==='ALL' ? order.map(x=>x.key) : [newsFilter];
+  let html='';
+  if(newsView==='timeline' || newsFilter!=='ALL'){
+    // merge across positions, one row per article, tagged with every holding it mentions
+    const byUrl={};
+    keys.forEach(k=>(items[k]||[]).forEach(n=>{
+      const e=byUrl[n.url]; if(e){ if(!e.tags.includes(k)) e.tags.push(k); if(n.ts>e.n.ts) e.n=n; }
+      else byUrl[n.url]={n, tags:[k]};
+    }));
+    const rows=Object.values(byUrl).sort((a,b)=>b.n.ts-a.n.ts).slice(0,120);
+    html = rows.map(r=>newsItemHTML(r.n, r.tags, ctx, newsFilter!=='ALL'?newsFilter:r.tags[0])).join('')
+        || '<div class="empty"><p class="muted">No headlines in the past '+NEWS_MAX_DAYS+' days.</p></div>';
+    listEl.className='';
+  }else{
+    html = order.map(x=>{
+      const arr=items[x.key]||[]; const c=ctx[x.key]||{}; const nw=arr.filter(n=>!seenMap[n.id]).length;
+      const open = openGroups.has(x.key) || (nw>0 && !openGroups.has('!'+x.key));
+      return `<details class="news-group" data-group="${esc(x.key)}"${open?' open':''}>
+        <summary>
+          <span><span class="gt">${esc(x.ticker)}</span><span class="gn">${esc(x.name)}</span></span>
+          <span class="${cls(c.dayPct||0)}" style="font-weight:700">${c.dayPct!=null?fmtPct(c.dayPct):'—'}</span>
+          <span class="muted">${c.value!=null?fmt(c.value):'—'}</span>
+          <span class="muted tiny">${nw?'<b style="color:var(--accent)">'+nw+' new</b> · ':''}${arr.length} headline${arr.length===1?'':'s'} <span class="arrow">&#9654;</span></span>
+        </summary>
+        ${arr.length ? arr.map(n=>newsItemHTML(n,[x.key],ctx,x.key)).join('') : '<div class="tiny muted" style="padding:10px 14px">No recent news found.</div>'}
+      </details>`;
+    }).join('');
+    listEl.className='grouped';
+  }
+  listEl.innerHTML=html;
+
+  // meta + notes
+  const upd=newsCache.updated?new Date(newsCache.updated).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}):'';
+  if(!newsLoading) newsStatus((upd?'Updated '+upd+' · ':'')+totalUniq+' headlines · '+(totalNew?totalNew+' new since last visit':'nothing new'));
+  const notes=[];
+  const empty=order.filter(x=>!(items[x.key]||[]).length).map(x=>x.ticker);
+  if(empty.length) notes.push('No recent news found for: '+empty.join(', ')+'.');
+  if(newsCache.failed && newsCache.failed.length) notes.push('Could not reach a news source for: '+newsCache.failed.join(', ')+' — showing the previous load.');
+  const notCovered=order.filter(x=>!(feed && (feed.tickers[x.fhSym]||feed.tickers[x.key]))).map(x=>x.ticker);
+  if(feed && notCovered.length) notes.push('Not in the data feed (add to data/tickers.json): '+notCovered.join(', ')+' — fetched live via proxy instead.');
+  notes.push((feed?'Data feed refreshed '+feedStamp()+' (GitHub, ~every 30 min; Yahoo Finance headlines)':(apiKey?'Finnhub company news':'Yahoo news feed'))+' · past '+NEWS_MAX_DAYS+' days, up to '+NEWS_PER_TICKER+' per stock. Headlines open in a new tab and are marked seen when you leave this tab.');
+  notes.push('Day % and value beside each headline are your position’s live figures, not the article’s.');
+  $('#newsNote').innerHTML=notes.map(esc).join('<br>');
+}
+function renderEarnings(){
+  const el=$('#earnStrip'); if(!el) return;
+  const meta=$('#earnMeta');
+  if(!earnCache.updated){
+    el.innerHTML='<span class="tiny muted">'+(earnLoading||newsLoading?'Loading earnings calendar…':(feed||apiKey?'Not loaded yet — press “Refresh news”.':'Waiting for the data feed (first run takes a few minutes after deploy).'))+'</span>';
+    meta.textContent=''; return;
+  }
+  const today=todayStr();
+  const list=[...(earnCache.list||[])].filter(e=>e.date>=today).sort((a,b)=>a.date<b.date?-1:1);
+  meta.textContent='upcoming · updated '+new Date(earnCache.updated).toLocaleDateString('en-IE',{day:'numeric',month:'short'});
+  if(!list.length){ el.innerHTML='<span class="tiny muted">No upcoming earnings dates found for your holdings.</span>'; return; }
+  const hourLabel={bmo:'before open', amc:'after close', dmh:'during market'};
+  const fmtD=(d,opt)=>new Date(d+'T00:00:00').toLocaleDateString('en-IE',opt||{weekday:'short',day:'numeric',month:'short'});
+  el.innerHTML=list.map(e=>{
+    const days=Math.round((Date.parse(e.date+'T00:00:00')-Date.parse(today+'T00:00:00'))/864e5);
+    const when = e.rangeEnd && e.rangeEnd!==e.date ? fmtD(e.date,{day:'numeric',month:'short'})+' – '+fmtD(e.rangeEnd,{day:'numeric',month:'short'})+' (est.)' : fmtD(e.date);
+    const k = days===0?' today':(days<=7?' soon':'');
+    return `<div class="earn${k}" title="${esc(e.ticker)}${e.q?' · Q'+e.q+' '+(e.y||''):''}${e.rev?' · est. revenue '+Number(e.rev).toLocaleString('en-IE'):''}${e.rangeEnd?' · date not yet confirmed by the company':''}">
+      <b>${esc(e.ticker)}</b>
+      <span>${esc(when)}${e.hour&&hourLabel[e.hour]?' · '+hourLabel[e.hour]:''}</span>
+      <span class="when">${days===0?'today':(days===1?'tomorrow':'in '+days+' days')}${e.eps!=null?' · est. EPS '+Number(e.eps).toFixed(2):''}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ---- news events (delegated) ---- */
+$('#newsChips').addEventListener('click', e=>{
+  const c=e.target.closest('[data-filter]'); if(!c) return;
+  newsFilter=c.getAttribute('data-filter'); renderNews();
+});
+$('#newsList').addEventListener('click', e=>{
+  const tag=e.target.closest('.ttag[data-filter]');
+  if(tag){ newsFilter=tag.getAttribute('data-filter'); renderNews(); return; }
+  const a=e.target.closest('a[data-open]');
+  if(a){ markSeen(a.getAttribute('data-open')); const it=a.closest('.news-item'); if(it){ it.classList.remove('new'); const p=it.querySelector('.pill.new'); if(p) p.remove(); } }
+});
+$('#newsList').addEventListener('toggle', e=>{
+  const d=e.target; if(!d.matches || !d.matches('details[data-group]')) return;
+  const k=d.getAttribute('data-group');
+  if(d.open){ openGroups.add(k); openGroups.delete('!'+k); } else { openGroups.delete(k); openGroups.add('!'+k); }
+}, true);
+document.querySelectorAll('#newsSeg [data-nv]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#newsSeg [data-nv]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); newsView=b.getAttribute('data-nv'); store.set(LS.nview,newsView); renderNews();
+});
+$('#btnNewsRefresh').onclick=()=>{ loadNews(true).then(()=>{ if(!feed && apiKey) loadEarnings().catch(()=>{}); }).catch(()=>{}); };
+$('#btnSeenAll').onclick=()=>markAllSeen(false);
+document.querySelectorAll('#viewSeg [data-view]').forEach(b=>b.onclick=()=>switchView(b.getAttribute('data-view')));
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden && currentView==='news') markAllSeen(true); });
 
 /* ---------- Auto-refresh ---------- */
 function applyAuto(){
@@ -1026,9 +1535,11 @@ document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e
 /* ---------- Events ---------- */
 $('#btnSettings').onclick=()=>{ $('#apiKey').value=apiKey; $('#baseCcy').value=baseCcy; openModal('#settingsModal'); };
 $('#btnSaveSettings').onclick=()=>{
-  apiKey=$('#apiKey').value.trim(); baseCcy=$('#baseCcy').value;
+  const newKey=$('#apiKey').value.trim();
+  if(newKey!==apiKey){ newsCache.updated=0; earnCache.updated=0; }   // new source → reload news + earnings
+  apiKey=newKey; baseCcy=$('#baseCcy').value;
   store.set(LS.key, apiKey); store.set(LS.base, baseCcy);
-  closeModal('#settingsModal'); refresh();
+  closeModal('#settingsModal'); refresh(); renderEarnings();
 };
 $('#btnHoldings').onclick=$('#btnAddFirst').onclick=()=>{ $('#bulkInput').value=holdingsToText(); $('#parseErr').innerHTML=''; openModal('#holdingsModal'); };
 $('#btnSaveHoldings').onclick=()=>{
@@ -1109,6 +1620,9 @@ window.addEventListener('appinstalled', ()=>{
 function init(){
   $('#autoToggle').checked = store.get(LS.auto,false);
   $('#autoInterval').value = store.get(LS.intv,60);
+  document.querySelectorAll('#newsSeg [data-nv]').forEach(x=>x.classList.toggle('active', x.getAttribute('data-nv')===newsView));
+  updateBadge();
+  if(currentView==='news'){ currentView='dash'; switchView('news'); }
   render();
   if(holdings.length){ refresh(); applyAuto(); }
   if('serviceWorker' in navigator){

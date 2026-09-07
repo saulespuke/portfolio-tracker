@@ -1,5 +1,5 @@
 /* Portfolio Tracker service worker — offline app shell, network for data */
-const CACHE = 'portfolio-tracker-v10';
+const CACHE = 'portfolio-tracker-v11';
 const SHELL = [
   './',
   './index.html',
@@ -35,8 +35,8 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Never cache live API calls — always go to network.
-  if (LIVE_HOSTS.some(h => url.hostname.includes(h))) {
+  // Never cache live API calls or the data feed — always go to network.
+  if (LIVE_HOSTS.some(h => url.hostname.includes(h)) || url.pathname.includes('/data/')) {
     return; // default browser handling (network)
   }
 
