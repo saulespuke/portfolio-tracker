@@ -1,0 +1,9 @@
+{
+  "_comment": "App ticker -> Yahoo Finance symbol candidates (first that resolves wins). Edit this when holdings change; the feed workflow picks it up on its next run.",
+  "AAPL": ["AAPL"], "AEM": ["AEM"], "AMZN": ["AMZN"], "BABA": ["BABA"], "GOOGL": ["GOOGL"], "GOOG": ["GOOG"],
+  "HIMX": ["HIMX"], "KO": ["KO"], "META": ["META"], "MSFT": ["MSFT"], "NFLX": ["NFLX"], "PAAS": ["PAAS"],
+  "AMD": ["AMD"], "AVGO": ["AVGO"], "CSCO": ["CSCO"], "IBM": ["IBM"], "NVDA": ["NVDA"], "ORCL": ["ORCL"],
+  "PLTR": ["PLTR"], "QCOM": ["QCOM"], "QUBT": ["QUBT"], "TSLA": ["TSLA"], "TSM": ["TSM"],
+  "WLN": ["WLN.PA"],
+  "GRU": ["GRU.VI", "GRU.F", "GRU.DE", "GRU.SG", "GRU.MU"]
+}
