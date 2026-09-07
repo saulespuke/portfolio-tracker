@@ -19,6 +19,37 @@ TICKERS = os.path.join(ROOT, 'data', 'tickers.json')
 OUT = os.path.join(ROOT, 'data', 'feed.json')
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36'
 NEWS_DAYS, NEWS_MAX = 14, 15
+# Words that identify each company in a headline. Yahoo's per-ticker RSS mixes in generic
+# market stories, so anything not tagged by Yahoo itself must mention one of these.
+ALIAS = {
+    'AAPL': ['Apple', 'iPhone'], 'AMZN': ['Amazon', 'AWS'], 'GOOGL': ['Google', 'Alphabet'], 'GOOG': ['Google', 'Alphabet'],
+    'META': ['Meta', 'Facebook', 'Instagram'], 'MSFT': ['Microsoft'], 'NVDA': ['Nvidia'], 'AMD': ['AMD', 'Advanced Micro Devices'],
+    'IBM': ['IBM'], 'TSM': ['TSMC', 'Taiwan Semiconductor'], 'KO': ['Coca-Cola', 'Coke'], 'PAAS': ['Pan American Silver'],
+    'QUBT': ['Quantum Computing Inc'], 'HIMX': ['Himax'], 'AEM': ['Agnico'], 'BABA': ['Alibaba'], 'WLN': ['Worldline'],
+    'NFLX': ['Netflix'], 'AVGO': ['Broadcom'], 'CSCO': ['Cisco'], 'ORCL': ['Oracle'], 'PLTR': ['Palantir'],
+    'QCOM': ['Qualcomm'], 'TSLA': ['Tesla', 'Musk'], 'GRU': ['Geely'],
+}
+GENERIC = {'the', 'inc', 'corp', 'corporation', 'company', 'group', 'holdings', 'holding', 'limited', 'ltd', 'plc', 'sa',
+           'international', 'advanced', 'global', 'technologies', 'systems', 'quantum', 'taiwan'}
+
+
+def keywords(base, name):
+    kws = set(ALIAS.get(base, []))
+    if len(base) >= 3:
+        kws.add(base)
+    w = re.split(r'[\s,.]+', name or '')[0] if name else ''
+    if len(w) >= 4 and w.lower() not in GENERIC:
+        kws.add(w)
+    return kws
+
+
+def relevant(item, kws):
+    text = (item.get('title', '') + ' ' + item.get('sum', ''))
+    return any(re.search(r'(?<![A-Za-z])' + re.escape(k) + r'(?![A-Za-z])', text, re.I) for k in kws)
+
+
+def norm_title(t):
+    return re.sub(r'\W+', '', t.lower())[:80]
 
 S = requests.Session()
 S.headers.update({'User-Agent': UA, 'Accept': '*/*', 'Accept-Language': 'en-US,en;q=0.9'})
@@ -101,9 +132,37 @@ def rss_news(sym):
     return out
 
 
+def google_news(query):
+    """Google News RSS for a company-name query — the most on-topic source, incl. European names."""
+    q = requests.utils.quote(f'{query} stock', safe='')
+    r = get(f'https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en')
+    out = []
+    if not r or not r.ok or '<rss' not in r.text:
+        return out
+    try:
+        root = ET.fromstring(r.text.encode('utf-8'))
+    except ET.ParseError:
+        return out
+    for it in root.iter('item'):
+        g = lambda k: (it.findtext(k) or '').strip()
+        link, title = g('link'), html.unescape(g('title'))
+        src = (it.find('source').text if it.find('source') is not None else '') or ''
+        if src and title.endswith(' - ' + src):
+            title = title[: -len(src) - 3].rstrip()
+        if not link or not title:
+            continue
+        try:
+            ts = int(datetime.strptime(g('pubDate'), '%a, %d %b %Y %H:%M:%S %Z').replace(tzinfo=timezone.utc).timestamp())
+        except Exception:
+            ts = 0
+        out.append({'id': g('guid') or link, 'title': title, 'url': link, 'src': src or 'Google News',
+                    'ts': ts, 'sum': '', 'img': '', 'tagged': False})
+    return out
+
+
 def search_news(sym, base):
     """Yahoo's search feed mixes in generic market stories; keep only items tagged with this ticker."""
-    r = get(f'https://query1.finance.yahoo.com/v1/finance/search?q={sym}&newsCount=20&quotesCount=0&enableFuzzyQuery=false')
+    r = get(f'https://query1.finance.yahoo.com/v1/finance/search?q={sym}&newsCount=30&quotesCount=0&enableFuzzyQuery=false')
     out = []
     if not r or not r.ok:
         return out
@@ -122,7 +181,8 @@ def search_news(sym, base):
         except Exception:
             pass
         out.append({'id': n.get('uuid') or n.get('link'), 'title': n.get('title', '').strip(), 'url': n.get('link'),
-                    'src': n.get('publisher', ''), 'ts': int(n.get('providerPublishTime') or 0), 'sum': '', 'img': img})
+                    'src': n.get('publisher', ''), 'ts': int(n.get('providerPublishTime') or 0), 'sum': '', 'img': img,
+                    'tagged': True})
     return out
 
 
@@ -172,10 +232,20 @@ def main():
             if base in prev:
                 feed[base] = prev[base]
             continue
-        news = {}
-        for n in rss_news(sym) + search_news(sym, base):
-            if n['ts'] >= cutoff and n['url'] and n['url'] not in news:
-                news[n['url']] = n
+        kws = keywords(base, entry['name'])
+        gq = ALIAS.get(base, [None])[0] or (entry['name'] or base)
+        seen_titles, news = set(), {}
+        # tagged Yahoo items first, then Google News, then Yahoo RSS — later duplicates lose
+        for n in search_news(sym, base) + google_news(gq) + rss_news(sym):
+            if n['ts'] < cutoff or not n['url'] or n['url'] in news:
+                continue
+            if not n.get('tagged') and not relevant(n, kws):
+                continue
+            nt = norm_title(n['title'])
+            if nt in seen_titles:
+                continue
+            seen_titles.add(nt); n.pop('tagged', None)
+            news[n['url']] = n
         items = sorted(news.values(), key=lambda n: -n['ts'])[:NEWS_MAX]
         if not items and base in prev:
             items = prev[base].get('news', [])
